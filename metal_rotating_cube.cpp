@@ -241,6 +241,7 @@ public:
             MTL::RenderCommandEncoder* pEnc = pCmd->renderCommandEncoder(pRpd);
             pEnc->setRenderPipelineState(_pPipelineState);
             pEnc->setDepthStencilState(_pDepthState);
+            pEnc->setFrontFacingWinding(MTL::WindingCounterClockwise);
             pEnc->setCullMode(MTL::CullModeBack); // 뒷면 버리기 (Culling)
 
             pEnc->setVertexBuffer(_pVertexBuffer, 0, 0);
