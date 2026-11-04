@@ -182,7 +182,7 @@ const char* kShaderSource = R"(
 class CubeRenderer {
 public:
     CubeRenderer(MTL::Device* pDevice)
-        : _pDevice(pDevice->retain()), _angle(0.0f) {
+        : _pDevice(pDevice->retain()), _angle(0.0f), _lastTime(std::chrono::high_resolution_clock::now()) {
         _pCommandQueue = _pDevice->newCommandQueue();
         buildBuffers();
         buildPipeline();
@@ -202,8 +202,12 @@ public:
     void draw(MTK::View* pView) {
         NS::AutoreleasePool* pPool = NS::AutoreleasePool::alloc()->init();
 
-        // 1. 회전 애니메이션 업데이트 (매 프레임 각도 증가)
-        _angle += 0.015f;
+        // 1. 델타 타임(dt) 계산 및 회전 애니메이션 업데이트 (프레임 독립적)
+        auto now = std::chrono::high_resolution_clock::now();
+        float dt = std::chrono::duration<float>(now - _lastTime).count();
+        _lastTime = now;
+
+        _angle += 0.9f * dt;
 
         // 2. MVP 행렬 계산
         Matrix4x4 modelRotX = Matrix4x4::rotationX(_angle * 0.8f);
@@ -331,6 +335,7 @@ private:
     MTL::RenderPipelineState* _pPipelineState;
     MTL::DepthStencilState* _pDepthState;
     float _angle;
+    std::chrono::high_resolution_clock::time_point _lastTime;
 };
 
 // 5. MetalKit 뷰 델리게이트
