@@ -2,7 +2,7 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Debug Metal Cube",
+            "name": "Launch: Debug",
             "type": "lldb",
             "request": "launch",
             "program": "${workspaceFolder}/build/debug/metal_rotating_cube",
@@ -11,7 +11,7 @@
             "terminal": "integrated"
         },
         {
-            "name": "Run Release Metal Cube",
+            "name": "Launch: Release",
             "type": "lldb",
             "request": "launch",
             "program": "${workspaceFolder}/build/release/metal_rotating_cube",
