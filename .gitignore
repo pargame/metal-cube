@@ -1,0 +1,9 @@
+# 빌드 산출물
+build/
+
+# IDE 및 인덱싱 캐시
+.cache/
+compile_commands.json
+
+# macOS 시스템 파일
+.DS_Store
