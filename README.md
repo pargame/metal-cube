@@ -31,6 +31,6 @@ ninja -C build/release
 ```
 
 ### VSCode에서 실행
-1. VSCode에서 `metal_cube` 폴더 열기: `code ~/repos/metal_cube`
+1. VSCode에서 `metal-cube` 폴더 열기: `code ~/repos/metal-cube`
 2. <kbd>Cmd</kbd> + <kbd>Shift</kbd> + <kbd>B</kbd> 로 빌드 (Debug 또는 Release 선택)
 3. <kbd>F5</kbd> 를 누르면 3D 큐브 창이 즉시 실행됩니다.
