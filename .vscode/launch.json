@@ -8,7 +8,8 @@
             "program": "${workspaceFolder}/build/debug/metal_rotating_cube",
             "args": [],
             "cwd": "${workspaceFolder}",
-            "terminal": "integrated"
+            "terminal": "integrated",
+            "internalConsoleOptions": "neverOpen"
         },
         {
             "name": "Launch: Release",
@@ -17,7 +18,8 @@
             "program": "${workspaceFolder}/build/release/metal_rotating_cube",
             "args": [],
             "cwd": "${workspaceFolder}",
-            "terminal": "integrated"
+            "terminal": "integrated",
+            "internalConsoleOptions": "neverOpen"
         }
     ]
 }
