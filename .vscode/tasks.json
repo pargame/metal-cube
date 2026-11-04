@@ -4,14 +4,14 @@
         {
             "label": "Build: Debug",
             "type": "shell",
-            "command": "cmake -B build/debug -DCMAKE_BUILD_TYPE=Debug -G Ninja && ninja -C build/debug",
+            "command": "cmake -B build/debug -DCMAKE_BUILD_TYPE=Debug -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -G Ninja && ninja -C build/debug",
             "group": "build",
             "problemMatcher": []
         },
         {
             "label": "Build: Release",
             "type": "shell",
-            "command": "cmake -B build/release -DCMAKE_BUILD_TYPE=Release -G Ninja && ninja -C build/release",
+            "command": "cmake -B build/release -DCMAKE_BUILD_TYPE=Release -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -G Ninja && ninja -C build/release",
             "group": "build",
             "problemMatcher": []
         }

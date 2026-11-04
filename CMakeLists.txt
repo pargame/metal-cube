@@ -8,9 +8,6 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # 바이너리를 빌드 폴더(build/debug 또는 build/release) 바로 아래로 출력
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
 
-# clangd / VSCode 자동완성을 위한 compile_commands.json 항상 생성
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-
 # 실행 파일 타깃
 add_executable(metal_rotating_cube metal_rotating_cube.cpp)
 
