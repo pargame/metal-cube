@@ -1,3 +1,5 @@
+> 🌐 **Language:** **English** | [한국어](README_KO.md)
+
 ## About
 
 **metal-cpp** is a low overhead and header only C++ interface for Metal that helps developers add Metal functionality to graphics applications that are written in C++ (such as game engines). **metal-cpp** removes the need to create a shim and allows developers to call Metal functions directly from anywhere in their existing C++ code.

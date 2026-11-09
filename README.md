@@ -1,39 +1,41 @@
+> 🌐 **Language:** **English** | [한국어](README_KO.md)
+
 # Metal Cube (3D Rotating Cube)
 
-Apple Silicon Mac 환경에서 **순수 C++ (`metal-cpp`)**로 구현한 하드웨어 가속 3D 회전 큐브 애플리케이션입니다.
+A hardware-accelerated 3D rotating cube application written in **pure C++ (`metal-cpp`)** for Apple Silicon Macs.
 
-## 특징
-- **100% C++17/26 + MSL (Metal Shading Language)**: Objective-C 브릿지 없이 Apple 공식 `metal-cpp` 및 `metal-cpp-extensions` 직접 연동.
-- **의미론적(Semantic) 9단계 아키텍처 분리**: [3D 공간 렌더링 의미론적 설계 문서](docs/3d-rendering-semantics.md)와 1:1로 대응하도록 모듈 분할.
-  - `include/Math3D.hpp`: 기준 좌표계 전이(Change of Basis)를 위한 4x4 동차 좌표 행렬 연산
-  - `include/World.hpp`: **[1~2단계]** 공간·개체의 존재론적 정의 및 프레임 독립적 시간 전이(`WorldState`)
-  - `include/Observer.hpp`: **[3~4단계]** 관찰자(카메라) 시점 변환 및 3D $\to$ 2D 원근 투영(`Observer`)
-  - `include/Shaders.hpp`: **[4단계 & 7단계]** 정점 셰이더 내 단계별 좌표계 전이(`Local` $\to$ `World` $\to$ `View` $\to$ `Clip`) 및 프래그먼트 셰이더 광학적 상호작용 해석
-  - `include/Renderer.hpp`: **[4~9단계]** 후면 컬링, 이산화, 폐색 해결(Z-버퍼), 인지적 매핑(sRGB), 3중 버퍼링(Triple Buffering + 세마포어) 시간 격리 및 물리 신호 표출(`CubeRenderer`)
-  - `metal_rotating_cube.cpp`: 런타임 루프 조율(`ViewDelegate`) 및 네이티브 윈도우 초기화
-- **VSCode 원클릭 디버깅**: `tasks.json` (Ninja 빌드) 및 `launch.json` (CodeLLDB) 연동으로 <kbd>F5</kbd> 단축키 즉시 구동.
+## Features
+- **100% C++17/26 + MSL (Metal Shading Language)**: Direct integration with Apple's official `metal-cpp` ([English Guide](metal-cpp/README.md) | [한국어 가이드](metal-cpp/README_KO.md)) and `metal-cpp-extensions` without Objective-C bridges.
+- **9-Stage Semantic Architecture Modularization**: Modularized 1:1 according to the [3D Space Rendering Semantic Design Document](docs/3d-rendering-semantics.md).
+  - `include/Math3D.hpp`: 4x4 homogeneous coordinate matrix operations for reference frame transformations (Change of Basis)
+  - `include/World.hpp`: **[Stages 1–2]** Spatial ontology definitions and frame-independent temporal state transitions (`WorldState`)
+  - `include/Observer.hpp`: **[Stages 3–4]** Observer (camera) view transformation and 3D $\to$ 2D perspective projection (`Observer`)
+  - `include/Shaders.hpp`: **[Stages 4 & 7]** Step-by-step coordinate space transitions (`Local` $\to$ `World` $\to$ `View` $\to$ `Clip`) in the vertex shader and optical interaction evaluation in the fragment shader
+  - `include/Renderer.hpp`: **[Stages 4–9]** Back-face culling, spatial discretization, occlusion resolution (Z-buffer), perceptual mapping (sRGB), triple-buffered (`Triple Buffering` + semaphore) temporal isolation, and physical signal presentation (`CubeRenderer`)
+  - `metal_rotating_cube.cpp`: Runtime frame loop orchestration (`ViewDelegate`) and native window initialization
+- **One-Click Debugging in VSCode**: Instant execution via <kbd>F5</kbd> using `tasks.json` (Ninja build) and `launch.json` (CodeLLDB).
 
-## 빌드 및 실행
+## Build and Run
 
-### 필수 요구사항
-- macOS (Apple Silicon 권장)
+### Requirements
+- macOS (Apple Silicon recommended)
 - CMake 3.20+ & Ninja
 - Clang / LLVM
 
-### 터미널 빌드
+### Terminal Build
 ```bash
-# Debug 빌드
+# Debug build
 cmake -B build/debug -DCMAKE_BUILD_TYPE=Debug -G Ninja
 ninja -C build/debug
 ./build/debug/metal_rotating_cube
 
-# Release 빌드
+# Release build
 cmake -B build/release -DCMAKE_BUILD_TYPE=Release -G Ninja
 ninja -C build/release
 ./build/release/metal_rotating_cube
 ```
 
-### VSCode에서 실행
-1. VSCode에서 `metal-cube` 폴더 열기: `code ~/repos/metal-cube`
-2. <kbd>Cmd</kbd> + <kbd>Shift</kbd> + <kbd>B</kbd> 로 빌드 (Debug 또는 Release 선택)
-3. <kbd>F5</kbd> 를 누르면 3D 큐브 창이 즉시 실행됩니다.
+### Run in VSCode
+1. Open the `metal-cube` folder in VSCode: `code ~/repos/metal-cube`
+2. Press <kbd>Cmd</kbd> + <kbd>Shift</kbd> + <kbd>B</kbd> to build (select Debug or Release)
+3. Press <kbd>F5</kbd> to launch the 3D cube window immediately.
