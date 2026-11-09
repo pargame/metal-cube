@@ -24,7 +24,7 @@
 | macOS 14, iOS 17 | **MetalFX** 프레임워크 지원 추가. <br/>macOS 14 및 iOS 17의 모든 API 추가. |
 | macOS 13.3, iOS 16.4 | macOS 13.3 및 iOS 16.4의 모든 API 추가. |
 | macOS 13, iOS 16 | macOS 13 및 iOS 16의 모든 API 추가.<br />메모리 관리를 돕는 선택적 `NS::SharedPtr<T>` 타입 신규 도입.<br/>`CA::MetalLayer`를 생성하는 편의 함수 추가.<br/>리터럴로부터 문자열을 더 빠르게 생성할 수 있는 `MTLSTR(str)` 매크로 추가.<br/>포인터 배열을 입력으로 받는 함수들의 시그니처 문제 수정.<br/>`MTL::LinkedFunctions`의 `setGroups()` 함수 시그니처 문제 수정.|
-| macOS 12, iOS 15 | 최초 릴리스. |
+| macOS 12, iOS 15 | 최초 릴리즈. |
 
 ## 메모리 할당 정책 (Memory Allocation Policy)
 
@@ -45,7 +45,7 @@
 
 임시 객체가 `AutoreleasePool`에 추가되므로 개발자가 직접 `release()`를 명시적으로 호출할 필요가 없으며, `AutoreleasePool`이 암묵적으로 생명주기를 관리하도록 맡길 수 있습니다.
 
-이름이 `alloc`, `new`, `copy`, `mutableCopy`, 또는 `Create`로 시작하지 않는 메서드로 객체를 생성하면, 해당 생성 메서드는 객체를 자동으로 오토리리즈 풀(autorelease pool)에 추가합니다.
+이름이 `alloc`, `new`, `copy`, `mutableCopy`, 또는 `Create`로 시작하지 않는 메서드로 객체를 생성하면, 해당 생성 메서드는 객체를 자동으로 오토릴리즈 풀(autorelease pool)에 추가합니다.
 
 프로그램 메인 스레드에서 `AutoreleasePool`의 일반적인 유효 범위(scope)는 렌더링 1프레임입니다. 스레드가 윈도우 시스템으로부터 입력과 이벤트를 수신하는 객체인 런루프(RunLoop)로 제어권을 반환할 때 풀이 *비워지며(drained)* 내부 객체들을 해제합니다.
 
@@ -62,11 +62,11 @@
 
 ### AutoreleasePool의 사용 및 디버깅 (Use and debug AutoreleasePools)
 
-오토리리즈(autoreleased) 객체를 생성할 때 이를 감싸는 상위 `AutoreleasePool`이 없으면 해당 객체는 메모리 누수(leak)가 발생합니다.
+오토릴리즈(autoreleased) 객체를 생성할 때 이를 감싸는 상위 `AutoreleasePool`이 없으면 해당 객체는 메모리 누수(leak)가 발생합니다.
 
-이를 방지하기 위해 일반적으로 프로그램의 `main` 함수와 새로 생성하는 모든 스레드의 진입 함수(entry function)에 `AutoreleasePool`을 생성합니다. 또한 렌더링 루프처럼 오토리리즈 객체가 다수 생성되는 구간에서 프로그램의 최대 메모리 사용량(high memory watermark)이 커지는 것을 막기 위해 추가적인 `AutoreleasePool`을 생성할 수도 있습니다.
+이를 방지하기 위해 일반적으로 프로그램의 `main` 함수와 새로 생성하는 모든 스레드의 진입 함수(entry function)에 `AutoreleasePool`을 생성합니다. 또한 렌더링 루프처럼 오토릴리즈 객체가 다수 생성되는 구간에서 프로그램의 최대 메모리 사용량(high memory watermark)이 커지는 것을 막기 위해 추가적인 `AutoreleasePool`을 생성할 수도 있습니다.
 
-스레드에 사용 가능한 상위 `AutoreleasePool`이 없어 오토리리즈 객체가 누수될 때 런타임 경고를 출력하려면 환경 변수 `OBJC_DEBUG_MISSING_POOLS=YES`를 설정하세요.
+스레드에 사용 가능한 상위 `AutoreleasePool`이 없어 오토릴리즈 객체가 누수될 때 런타임 경고를 출력하려면 환경 변수 `OBJC_DEBUG_MISSING_POOLS=YES`를 설정하세요.
 
 또한 macOS에서는 메모리 그래프(memgraph) 파일이나 프로세스 ID를 대상으로 `leaks --autoreleasePools` 명령을 실행하여 프로그램의 `AutoreleasePool` 목록과 각 풀이 포함하고 있는 모든 객체를 확인할 수 있습니다.
 
