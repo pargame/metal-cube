@@ -1,21 +1,25 @@
 #pragma once
 
+#include <array>
+#include <type_traits>
 #include "Math3D.hpp"
 
 // CPU(시뮬레이션/관찰자 단계)에서 계산되어 GPU(셰이더 단계)로 전달되는 프레임 상태 구조체
 // 기준 좌표계의 단계별 전이(Local -> World -> View -> Clip)를 셰이더 내부에서 명시적으로 수행하기 위해
 // Model, View, Projection 행렬을 하나로 뭉개지 않고 각각 독립적으로 전달합니다.
 struct FrameUniforms {
-    Matrix4x4 modelMatrix;      // 2단계: 개체 고유 공간(Local) -> 세계 공간(World)
-    Matrix4x4 viewMatrix;       // 3단계: 세계 공간(World) -> 관찰자 공간(View)
-    Matrix4x4 projectionMatrix; // 4단계: 관찰자 공간(View) -> 클립/정규화 투영 공간(Clip/NDC)
-    float lightDirWorld[4];     // 1단계 & 7단계: 세계 공간 기준 광원 방향 벡터
+    Matrix4x4 modelMatrix;                // 2단계: 개체 고유 공간(Local) -> 세계 공간(World)
+    Matrix4x4 viewMatrix;                 // 3단계: 세계 공간(World) -> 관찰자 공간(View)
+    Matrix4x4 projectionMatrix;           // 4단계: 관찰자 공간(View) -> 클립/정규화 투영 공간(Clip/NDC)
+    std::array<float, 4> lightDirWorld{}; // 1단계 & 7단계: 세계 공간 기준 광원 방향 벡터
 };
+
+static_assert(std::is_standard_layout_v<FrameUniforms>, "FrameUniforms must maintain standard layout for GPU constant buffer mapping.");
 
 // Metal Shading Language (MSL) 소스 코드
 // 정점 셰이더(vertexMain)는 기준 좌표계의 단계별 전이와 차원 축소(1~4단계)를 수행하고,
 // 프래그먼트 셰이더(fragmentMain)는 확정된 가시 표면의 광학적 상호작용 해석(7단계)을 수행합니다.
-inline const char* kShaderSource = R"(
+inline constexpr const char* kShaderSource = R"(
     #include <metal_stdlib>
     using namespace metal;
 

@@ -5,7 +5,9 @@
 A hardware-accelerated 3D rotating cube application written in **pure C++ (`metal-cpp`)** for Apple Silicon Macs.
 
 ## Features
-- **100% C++17/26 + MSL (Metal Shading Language)**: Direct integration with Apple's official `metal-cpp` ([English Guide](metal-cpp/README.md) | [한국어 가이드](metal-cpp/README_KO.md)) and `metal-cpp-extensions` without Objective-C bridges.
+- **Modern C++26 + MSL (Metal Shading Language)**:
+  - Direct integration with Apple's official `metal-cpp` ([English Guide](metal-cpp/README.md) | [한국어 가이드](metal-cpp/README_KO.md)) and `metal-cpp-extensions` without Objective-C bridges.
+  - Idiomatic C++20/23/26 features: multidimensional subscript `operator[col, row]`, full RAII via `NS::SharedPtr` & `std::unique_ptr` (zero manual `release`/`delete`), `std::counting_semaphore`, `constexpr std::array`, `<numbers>`, `<print>`, C++26 `= delete("reason")`, and placeholder `_`.
 - **9-Stage Semantic Architecture Modularization**: Modularized 1:1 according to the [3D Space Rendering Semantic Design Document](docs/3d-rendering-semantics.md).
   - `include/Math3D.hpp`: 4x4 homogeneous coordinate matrix operations for reference frame transformations (Change of Basis)
   - `include/World.hpp`: **[Stages 1–2]** Spatial ontology definitions and frame-independent temporal state transitions (`WorldState`)

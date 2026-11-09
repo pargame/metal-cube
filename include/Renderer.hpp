@@ -1,9 +1,11 @@
 #pragma once
 
+#include <array>
 #include <cassert>
 #include <cstddef>
-#include <cstring>
-#include <dispatch/dispatch.h>
+#include <cstdio>
+#include <print>
+#include <semaphore>
 
 #include <Foundation/Foundation.hpp>
 #include <Metal/Metal.hpp>
@@ -22,69 +24,63 @@ public:
     // [9단계: 시간적 격리(Triple Buffering)]
     // CPU가 다음 프레임의 세계 상태를 기록하는 동안 GPU가 이전 프레임을 동시에 그릴 수 있도록
     // 3개의 독립된 프레임 버퍼 슬롯을 운용합니다.
-    static constexpr int kMaxFramesInFlight = 3;
+    static constexpr std::size_t kMaxFramesInFlight = 3;
 
     explicit CubeRenderer(MTL::Device* pDevice)
-        : _pDevice(pDevice->retain()),
+        : _pDevice(NS::RetainPtr(pDevice)),
+          _pCommandQueue(NS::TransferPtr(_pDevice->newCommandQueue())),
+          _inFlightSemaphore(kMaxFramesInFlight),
           _currentFrameIndex(0) {
-        _pCommandQueue = _pDevice->newCommandQueue();
-
-        // 동시에 최대 3개의 프레임만 파이프라인에 진입하도록 제어하는 세마포어 생성
-        _inFlightSemaphore = dispatch_semaphore_create(kMaxFramesInFlight);
-
         buildSpatialOntologyBuffers();
         buildPipelineAndPerceptualMapping();
         buildOcclusionResolver();
     }
 
-    ~CubeRenderer() {
-        _pVertexBuffer->release();
-        _pIndexBuffer->release();
-        for (int i = 0; i < kMaxFramesInFlight; ++i) {
-            _pUniformBuffers[i]->release();
-        }
-        _pPipelineState->release();
-        _pDepthState->release();
-        _pCommandQueue->release();
-        _pDevice->release();
-    }
+    // NS::SharedPtr(RAII 스마트 포인터)가 모든 Metal 리소스의 참조 카운트를 자동 해제하므로 수동 소멸자 코드가 불필요합니다.
+    ~CubeRenderer() = default;
+
+    // [C++26 이유 있는 삭제 함수 (Deleted Function with Reason)]
+    // GPU 파이프라인 및 버퍼 소유권의 복사를 컴파일 타임에 명시적 메시지와 함께 차단합니다.
+    CubeRenderer(const CubeRenderer&) = delete("GPU 파이프라인 및 버퍼 리소스를 독점 소유하는 객체이므로 복사할 수 없습니다.");
+    CubeRenderer& operator=(const CubeRenderer&) = delete("GPU 파이프라인 및 버퍼 리소스를 독점 소유하는 객체이므로 복사 대입할 수 없습니다.");
 
     // 매 프레임 시뮬레이션이 완료된 세계 상태(world)를 관찰자(observer) 시점에서 화면(pView)에 투사합니다.
     void renderFrame(MTK::View* pView, const WorldState& world, const Observer& observer) {
-        NS::AutoreleasePool* pPool = NS::AutoreleasePool::alloc()->init();
+        // 스코프 종료 시 임시 Autorelease 객체들을 자동으로 비우는 RAII 풀
+        NS::SharedPtr<NS::AutoreleasePool> pPool = NS::TransferPtr(NS::AutoreleasePool::alloc()->init());
 
         // [9단계: 시간적 격리 동기화 (Temporal Isolation Wait)]
         // GPU가 아직 사용 중인 과거 프레임의 Uniform 버퍼를 CPU가 덮어쓰는 경쟁 상태(Race Condition)를 막기 위해,
-        // 가용 슬롯이 확보될 때까지 대기합니다.
-        dispatch_semaphore_wait(_inFlightSemaphore, DISPATCH_TIME_FOREVER);
+        // C++20 표준 세마포어로 가용 슬롯이 확보될 때까지 대기합니다.
+        _inFlightSemaphore.acquire();
 
-        MTL::Buffer* pCurrentUniformBuffer = _pUniformBuffers[_currentFrameIndex];
+        MTL::Buffer* pCurrentUniformBuffer = _pUniformBuffers[_currentFrameIndex].get();
         _currentFrameIndex = (_currentFrameIndex + 1) % kMaxFramesInFlight;
 
         // [2단계 ~ 4단계: 기준 좌표계 전이 행렬 스냅샷 구성]
         // 현재 시점의 세계 배치(Model), 관찰자 시점(View), 차원 축소(Projection) 행렬을 각각 산출하여
-        // 이번 프레임 전용 Uniform 버퍼 슬롯에 기록합니다.
+        // 이번 프레임 전용 Uniform 버퍼 슬롯에 값 의미론(Value Semantics) 대입으로 기록합니다.
         CGSize drawableSize = pView->drawableSize();
         float aspectRatio = (drawableSize.height > 0.0f)
                                 ? static_cast<float>(drawableSize.width / drawableSize.height)
                                 : 1.0f;
 
-        FrameUniforms uniforms;
-        uniforms.modelMatrix = world.computeModelMatrix();
-        uniforms.viewMatrix = observer.computeViewMatrix();
-        uniforms.projectionMatrix = observer.computeProjectionMatrix(aspectRatio);
-        std::memcpy(uniforms.lightDirWorld, world.lightDirectionWorld(), sizeof(uniforms.lightDirWorld));
+        FrameUniforms uniforms{
+            .modelMatrix = world.computeModelMatrix(),
+            .viewMatrix = observer.computeViewMatrix(),
+            .projectionMatrix = observer.computeProjectionMatrix(aspectRatio),
+            .lightDirWorld = world.lightDirectionWorld()
+        };
 
-        std::memcpy(pCurrentUniformBuffer->contents(), &uniforms, sizeof(FrameUniforms));
+        *static_cast<FrameUniforms*>(pCurrentUniformBuffer->contents()) = uniforms;
 
         // GPU 명령 기록을 위한 커맨드 버퍼 생성
         MTL::CommandBuffer* pCmd = _pCommandQueue->commandBuffer();
 
-        // [9단계: 시간적 격리 해제 콜백 등록]
+        // [9단계: 시간적 격리 해제 콜백 등록 (C++26 Placeholder Variable '_' 활용)]
         // GPU가 이번 프레임의 모든 렌더링 명령을 완료한 시점에 세마포어를 반환하여 슬롯을 재사용 가능하게 만듭니다.
-        dispatch_semaphore_t semaphore = _inFlightSemaphore;
-        pCmd->addCompletedHandler([semaphore](MTL::CommandBuffer*) {
-            dispatch_semaphore_signal(semaphore);
+        pCmd->addCompletedHandler([this](MTL::CommandBuffer* _) {
+            _inFlightSemaphore.release();
         });
 
         MTL::RenderPassDescriptor* pRpd = pView->currentRenderPassDescriptor();
@@ -92,10 +88,10 @@ public:
             MTL::RenderCommandEncoder* pEnc = pCmd->renderCommandEncoder(pRpd);
 
             // [4단계, 5단계, 7단계, 8단계 파이프라인 상태 연결]
-            pEnc->setRenderPipelineState(_pPipelineState);
+            pEnc->setRenderPipelineState(_pPipelineState.get());
 
             // [6단계: 폐색 해결(깊이 판정) 상태 연결]
-            pEnc->setDepthStencilState(_pDepthState);
+            pEnc->setDepthStencilState(_pDepthState.get());
 
             // [4단계: 가시 영역 선별 (Back-face Culling)]
             // 반시계 방향(CCW) 정점 순서로 정의된 면을 앞면으로 규정하고,
@@ -104,7 +100,7 @@ public:
             pEnc->setCullMode(MTL::CullModeBack);
 
             // [1단계 기하 버퍼 및 2~4단계 프레임 상태 버퍼 바인딩]
-            pEnc->setVertexBuffer(_pVertexBuffer, 0, 0);
+            pEnc->setVertexBuffer(_pVertexBuffer.get(), 0, 0);
             pEnc->setVertexBuffer(pCurrentUniformBuffer, 0, 1);
             pEnc->setFragmentBuffer(pCurrentUniformBuffer, 0, 1);
 
@@ -112,9 +108,9 @@ public:
             // 36개 인덱스로 구성된 12개의 삼각형을 GPU 파이프라인에 투입합니다.
             pEnc->drawIndexedPrimitives(
                 MTL::PrimitiveTypeTriangle,
-                36,
+                kCubeIndices.size(),
                 MTL::IndexTypeUInt16,
-                _pIndexBuffer,
+                _pIndexBuffer.get(),
                 0
             );
 
@@ -127,29 +123,28 @@ public:
         }
 
         pCmd->commit();
-        pPool->release();
     }
 
 private:
     // [1단계: 공간과 개체의 존재론적 데이터의 GPU 메모리 실체화]
-    // CPU에 정의된 정육면체 정점·인덱스 데이터와 9단계 시간 격리를 위한 3중 Uniform 버퍼를 할당합니다.
+    // CPU에 정의된 정육면체 정점·인덱스 데이터와 9단계 시간 격리를 위한 3중 Uniform 버퍼를 RAII 포인터로 할당합니다.
     void buildSpatialOntologyBuffers() {
-        _pVertexBuffer = _pDevice->newBuffer(
-            kCubeVertices,
+        _pVertexBuffer = NS::TransferPtr(_pDevice->newBuffer(
+            kCubeVertices.data(),
             sizeof(kCubeVertices),
             MTL::ResourceStorageModeShared
-        );
-        _pIndexBuffer = _pDevice->newBuffer(
-            kCubeIndices,
+        ));
+        _pIndexBuffer = NS::TransferPtr(_pDevice->newBuffer(
+            kCubeIndices.data(),
             sizeof(kCubeIndices),
             MTL::ResourceStorageModeShared
-        );
+        ));
 
-        for (int i = 0; i < kMaxFramesInFlight; ++i) {
-            _pUniformBuffers[i] = _pDevice->newBuffer(
+        for (auto& uniformBuffer : _pUniformBuffers) {
+            uniformBuffer = NS::TransferPtr(_pDevice->newBuffer(
                 sizeof(FrameUniforms),
                 MTL::ResourceStorageModeShared
-            );
+            ));
         }
     }
 
@@ -157,17 +152,17 @@ private:
     void buildPipelineAndPerceptualMapping() {
         NS::Error* pError = nullptr;
         NS::String* pSource = NS::String::string(kShaderSource, NS::StringEncoding::UTF8StringEncoding);
-        MTL::Library* pLibrary = _pDevice->newLibrary(pSource, nullptr, &pError);
+        NS::SharedPtr<MTL::Library> pLibrary = NS::TransferPtr(_pDevice->newLibrary(pSource, nullptr, &pError));
         if (!pLibrary) {
-            __builtin_printf("Shader compile error: %s\n", pError->localizedDescription()->utf8String());
+            std::println(stderr, "Shader compile error: {}", pError->localizedDescription()->utf8String());
             assert(false);
         }
 
-        MTL::Function* pVertFn = pLibrary->newFunction(
-            NS::String::string("vertexMain", NS::StringEncoding::UTF8StringEncoding)
+        NS::SharedPtr<MTL::Function> pVertFn = NS::TransferPtr(
+            pLibrary->newFunction(NS::String::string("vertexMain", NS::StringEncoding::UTF8StringEncoding))
         );
-        MTL::Function* pFragFn = pLibrary->newFunction(
-            NS::String::string("fragmentMain", NS::StringEncoding::UTF8StringEncoding)
+        NS::SharedPtr<MTL::Function> pFragFn = NS::TransferPtr(
+            pLibrary->newFunction(NS::String::string("fragmentMain", NS::StringEncoding::UTF8StringEncoding))
         );
 
         // [1단계 정점 메모리 레이아웃 명세]
@@ -187,9 +182,11 @@ private:
 
         pVertDesc->layouts()->object(0)->setStride(sizeof(Vertex));
 
-        MTL::RenderPipelineDescriptor* pPipeDesc = MTL::RenderPipelineDescriptor::alloc()->init();
-        pPipeDesc->setVertexFunction(pVertFn);
-        pPipeDesc->setFragmentFunction(pFragFn);
+        NS::SharedPtr<MTL::RenderPipelineDescriptor> pPipeDesc = NS::TransferPtr(
+            MTL::RenderPipelineDescriptor::alloc()->init()
+        );
+        pPipeDesc->setVertexFunction(pVertFn.get());
+        pPipeDesc->setFragmentFunction(pFragFn.get());
         pPipeDesc->setVertexDescriptor(pVertDesc);
 
         // [8단계: 인지적 색 공간 매핑 및 양자화 (Perceptual Mapping & Quantization)]
@@ -200,37 +197,33 @@ private:
         // [6단계: 폐색 해결을 위한 32비트 부동소수점 깊이 버퍼 포맷 연결]
         pPipeDesc->setDepthAttachmentPixelFormat(MTL::PixelFormatDepth32Float);
 
-        _pPipelineState = _pDevice->newRenderPipelineState(pPipeDesc, &pError);
+        _pPipelineState = NS::TransferPtr(_pDevice->newRenderPipelineState(pPipeDesc.get(), &pError));
         if (!_pPipelineState) {
-            __builtin_printf("Pipeline compile error: %s\n", pError->localizedDescription()->utf8String());
+            std::println(stderr, "Pipeline compile error: {}", pError->localizedDescription()->utf8String());
             assert(false);
         }
-
-        pVertFn->release();
-        pFragFn->release();
-        pPipeDesc->release();
-        pLibrary->release();
     }
 
     // [6단계: 폐색 해결과 가시 표면 확정 (Occlusion Resolution & Surface Determination)]
     // 동일한 화소(시선) 위치에 여러 삼각형 조각이 겹칠 때, 관찰자로부터의 깊이(Z)가 더 작은(가까운)
     // 표면만 통과시키고(CompareFunctionLess) 깊이 기록을 갱신하여 공간의 전후 인과율을 보존합니다.
     void buildOcclusionResolver() {
-        MTL::DepthStencilDescriptor* pDepthDesc = MTL::DepthStencilDescriptor::alloc()->init();
+        NS::SharedPtr<MTL::DepthStencilDescriptor> pDepthDesc = NS::TransferPtr(
+            MTL::DepthStencilDescriptor::alloc()->init()
+        );
         pDepthDesc->setDepthCompareFunction(MTL::CompareFunctionLess);
         pDepthDesc->setDepthWriteEnabled(true);
-        _pDepthState = _pDevice->newDepthStencilState(pDepthDesc);
-        pDepthDesc->release();
+        _pDepthState = NS::TransferPtr(_pDevice->newDepthStencilState(pDepthDesc.get()));
     }
 
-    MTL::Device* _pDevice;
-    MTL::CommandQueue* _pCommandQueue;
-    MTL::Buffer* _pVertexBuffer;
-    MTL::Buffer* _pIndexBuffer;
-    MTL::Buffer* _pUniformBuffers[kMaxFramesInFlight];
-    MTL::RenderPipelineState* _pPipelineState;
-    MTL::DepthStencilState* _pDepthState;
+    NS::SharedPtr<MTL::Device> _pDevice;
+    NS::SharedPtr<MTL::CommandQueue> _pCommandQueue;
+    NS::SharedPtr<MTL::Buffer> _pVertexBuffer;
+    NS::SharedPtr<MTL::Buffer> _pIndexBuffer;
+    std::array<NS::SharedPtr<MTL::Buffer>, kMaxFramesInFlight> _pUniformBuffers;
+    NS::SharedPtr<MTL::RenderPipelineState> _pPipelineState;
+    NS::SharedPtr<MTL::DepthStencilState> _pDepthState;
 
-    dispatch_semaphore_t _inFlightSemaphore;
-    int _currentFrameIndex;
+    std::counting_semaphore<kMaxFramesInFlight> _inFlightSemaphore;
+    std::size_t _currentFrameIndex;
 };

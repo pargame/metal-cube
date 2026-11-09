@@ -5,7 +5,9 @@
 Apple Silicon Mac 환경에서 **순수 C++ (`metal-cpp`)**로 구현한 하드웨어 가속 3D 회전 큐브 애플리케이션입니다.
 
 ## 특징
-- **100% C++17/26 + MSL (Metal Shading Language)**: Objective-C 브릿지 없이 Apple 공식 `metal-cpp` ([한국어 가이드](metal-cpp/README_KO.md) | [English Guide](metal-cpp/README.md)) 및 `metal-cpp-extensions` 직접 연동.
+- **모던 C++26 + MSL (Metal Shading Language)**:
+  - Objective-C 브릿지 없이 Apple 공식 `metal-cpp` ([한국어 가이드](metal-cpp/README_KO.md) | [English Guide](metal-cpp/README.md)) 및 `metal-cpp-extensions` 직접 연동.
+  - C++20/23/26 표준 기능 전면 적용: 다중 첨자 연산자 `operator[col, row]`, `NS::SharedPtr` 및 `std::unique_ptr` 기반 완전한 RAII(수동 `release`/`delete` 제거), `std::counting_semaphore`, `constexpr std::array`, `<numbers>`, `<print>`, C++26 `= delete("이유")` 및 플레이스홀더 `_`.
 - **의미론적(Semantic) 9단계 아키텍처 분리**: [3D 공간 렌더링 의미론적 설계 문서](docs/3d-rendering-semantics.md)와 1:1로 대응하도록 모듈 분할.
   - `include/Math3D.hpp`: 기준 좌표계 전이(Change of Basis)를 위한 4x4 동차 좌표 행렬 연산
   - `include/World.hpp`: **[1~2단계]** 공간·개체의 존재론적 정의 및 프레임 독립적 시간 전이(`WorldState`)

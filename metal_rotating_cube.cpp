@@ -1,3 +1,5 @@
+#include <memory>
+
 #define NS_PRIVATE_IMPLEMENTATION
 #define MTL_PRIVATE_IMPLEMENTATION
 #define MTK_PRIVATE_IMPLEMENTATION
@@ -20,11 +22,9 @@
 class ViewDelegate : public MTK::ViewDelegate {
 public:
     explicit ViewDelegate(MTL::Device* pDevice)
-        : _pRenderer(new CubeRenderer(pDevice)) {}
+        : _pRenderer(std::make_unique<CubeRenderer>(pDevice)) {}
 
-    ~ViewDelegate() override {
-        delete _pRenderer;
-    }
+    ~ViewDelegate() override = default;
 
     void drawInMTKView(MTK::View* pView) override {
         // [1단계 & 2단계: 공간 상태의 시간 전이]
@@ -37,41 +37,37 @@ public:
     }
 
 private:
-    WorldState _world;          // 1~2단계: 가상 공간의 존재론적 데이터 및 시간 전이 상태
-    Observer _observer;         // 3~4단계: 공간을 관측하는 관찰자(카메라) 및 차원 축소 규격
-    CubeRenderer* _pRenderer;   // 4~9단계: GPU 하드웨어 렌더링 파이프라인 및 동기화 표출기
+    WorldState _world;                         // 1~2단계: 가상 공간의 존재론적 데이터 및 시간 전이 상태
+    Observer _observer;                        // 3~4단계: 공간을 관측하는 관찰자(카메라) 및 차원 축소 규격
+    std::unique_ptr<CubeRenderer> _pRenderer;  // 4~9단계: GPU 하드웨어 렌더링 파이프라인 및 동기화 표출기
 };
 
 // 운영체제 창(Window) 및 디스플레이 출력 표면(MTK::View) 초기화 델리게이트
 // 가상 공간의 결과가 최종적으로 도달할 물리적 화면 영역(Screen Space)과 버퍼 포맷을 준비합니다.
 class AppDelegate : public NS::ApplicationDelegate {
 public:
-    ~AppDelegate() override {
-        _pMtkView->release();
-        _pWindow->release();
-        _pDevice->release();
-        delete _pViewDelegate;
-    }
+    // NS::SharedPtr와 std::unique_ptr를 통한 완전한 RAII 관리로 수동 해제 코드가 불필요합니다.
+    ~AppDelegate() override = default;
 
     void applicationWillFinishLaunching(NS::Notification* pNotification) override {
-        NS::Application* pApp = reinterpret_cast<NS::Application*>(pNotification->object());
+        auto* pApp = reinterpret_cast<NS::Application*>(pNotification->object());
         pApp->setActivationPolicy(NS::ActivationPolicy::ActivationPolicyRegular);
     }
 
     void applicationDidFinishLaunching(NS::Notification* pNotification) override {
         CGRect frame = (CGRect){ {150.0, 150.0}, {640.0, 640.0} };
 
-        _pWindow = NS::Window::alloc()->init(
+        _pWindow = NS::TransferPtr(NS::Window::alloc()->init(
             frame,
             NS::WindowStyleMaskClosable | NS::WindowStyleMaskTitled | NS::WindowStyleMaskResizable,
             NS::BackingStoreBuffered,
             false
-        );
+        ));
 
-        _pDevice = MTL::CreateSystemDefaultDevice();
+        _pDevice = NS::TransferPtr(MTL::CreateSystemDefaultDevice());
 
         // [5단계 & 6단계 & 8단계 & 9단계: 화면 공간(Screen Space) 화소 격자 및 하드웨어 버퍼 규격 설정]
-        _pMtkView = MTK::View::alloc()->init(frame, _pDevice);
+        _pMtkView = NS::TransferPtr(MTK::View::alloc()->init(frame, _pDevice.get()));
         // 8단계: 인지적 색 공간 매핑(sRGB 감마) 및 8비트 양자화 렌더 타겟 포맷 지정
         _pMtkView->setColorPixelFormat(MTL::PixelFormatBGRA8Unorm_sRGB);
         _pMtkView->setClearColor(MTL::ClearColor::Make(0.08, 0.10, 0.14, 1.0));
@@ -79,36 +75,35 @@ public:
         _pMtkView->setDepthStencilPixelFormat(MTL::PixelFormatDepth32Float);
         _pMtkView->setClearDepth(1.0);
 
-        _pViewDelegate = new ViewDelegate(_pDevice);
-        _pMtkView->setDelegate(_pViewDelegate);
+        _pViewDelegate = std::make_unique<ViewDelegate>(_pDevice.get());
+        _pMtkView->setDelegate(_pViewDelegate.get());
 
-        _pWindow->setContentView(_pMtkView);
+        _pWindow->setContentView(_pMtkView.get());
         _pWindow->setTitle(NS::String::string("Metal-CPP Rotating 3D Cube", NS::StringEncoding::UTF8StringEncoding));
         _pWindow->makeKeyAndOrderFront(nullptr);
 
-        NS::Application* pApp = reinterpret_cast<NS::Application*>(pNotification->object());
+        auto* pApp = reinterpret_cast<NS::Application*>(pNotification->object());
         pApp->activateIgnoringOtherApps(true);
     }
 
-    bool applicationShouldTerminateAfterLastWindowClosed(NS::Application*) override {
+    bool applicationShouldTerminateAfterLastWindowClosed(NS::Application* _) override {
         return true;
     }
 
 private:
-    NS::Window* _pWindow = nullptr;
-    MTK::View* _pMtkView = nullptr;
-    MTL::Device* _pDevice = nullptr;
-    ViewDelegate* _pViewDelegate = nullptr;
+    NS::SharedPtr<NS::Window> _pWindow;
+    NS::SharedPtr<MTK::View> _pMtkView;
+    NS::SharedPtr<MTL::Device> _pDevice;
+    std::unique_ptr<ViewDelegate> _pViewDelegate;
 };
 
 int main() {
-    NS::AutoreleasePool* pPool = NS::AutoreleasePool::alloc()->init();
+    NS::SharedPtr<NS::AutoreleasePool> pPool = NS::TransferPtr(NS::AutoreleasePool::alloc()->init());
 
     AppDelegate delegate;
     NS::Application* pApp = NS::Application::sharedApplication();
     pApp->setDelegate(&delegate);
     pApp->run();
 
-    pPool->release();
     return 0;
 }
