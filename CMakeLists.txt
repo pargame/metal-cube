@@ -11,8 +11,9 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}")
 # 실행 파일 타깃
 add_executable(metal_rotating_cube metal_rotating_cube.cpp)
 
-# 헤더 검색 경로 (Apple metal-cpp 순수 C++ 바인딩)
+# 헤더 검색 경로 (의미론적 단계별 모듈 헤더 및 Apple metal-cpp 순수 C++ 바인딩)
 target_include_directories(metal_rotating_cube PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
     ${CMAKE_CURRENT_SOURCE_DIR}/metal-cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/metal-cpp-extensions
 )

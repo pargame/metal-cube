@@ -4,10 +4,13 @@ Apple Silicon Mac 환경에서 **순수 C++ (`metal-cpp`)**로 구현한 하드�
 
 ## 특징
 - **100% C++17/26 + MSL (Metal Shading Language)**: Objective-C 브릿지 없이 Apple 공식 `metal-cpp` 및 `metal-cpp-extensions` 직접 연동.
-- **3D 수학 파이프라인**: Column-Major 4x4 행렬 (회전, 이동, Metal [0, 1] NDC 원근 투영).
-- **하드웨어 가속 렌더링**:
-  - Z-버퍼(Depth32Float) 깊이 테스트 및 후면 제거(Backface Culling).
-  - 람베르트(Lambert) 디퓨즈 + 앰비언트 3D 조명 셰이딩.
+- **의미론적(Semantic) 9단계 아키텍처 분리**: [3D 공간 렌더링 의미론적 설계 문서](docs/3d-rendering-semantics.md)와 1:1로 대응하도록 모듈 분할.
+  - `include/Math3D.hpp`: 기준 좌표계 전이(Change of Basis)를 위한 4x4 동차 좌표 행렬 연산
+  - `include/World.hpp`: **[1~2단계]** 공간·개체의 존재론적 정의 및 프레임 독립적 시간 전이(`WorldState`)
+  - `include/Observer.hpp`: **[3~4단계]** 관찰자(카메라) 시점 변환 및 3D $\to$ 2D 원근 투영(`Observer`)
+  - `include/Shaders.hpp`: **[4단계 & 7단계]** 정점 셰이더 내 단계별 좌표계 전이(`Local` $\to$ `World` $\to$ `View` $\to$ `Clip`) 및 프래그먼트 셰이더 광학적 상호작용 해석
+  - `include/Renderer.hpp`: **[4~9단계]** 후면 컬링, 이산화, 폐색 해결(Z-버퍼), 인지적 매핑(sRGB), 3중 버퍼링(Triple Buffering + 세마포어) 시간 격리 및 물리 신호 표출(`CubeRenderer`)
+  - `metal_rotating_cube.cpp`: 런타임 루프 조율(`ViewDelegate`) 및 네이티브 윈도우 초기화
 - **VSCode 원클릭 디버깅**: `tasks.json` (Ninja 빌드) 및 `launch.json` (CodeLLDB) 연동으로 <kbd>F5</kbd> 단축키 즉시 구동.
 
 ## 빌드 및 실행
