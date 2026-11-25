@@ -41,3 +41,7 @@ ninja -C build/release
 1. Open the `metal-cube` folder in VSCode: `code ~/repos/metal-cube`
 2. Press <kbd>Cmd</kbd> + <kbd>Shift</kbd> + <kbd>B</kbd> to build (select Debug or Release)
 3. Press <kbd>F5</kbd> to launch the 3D cube window immediately.
+
+## License
+
+The code is licensed under the [MIT License](LICENSE).
