@@ -7,3 +7,20 @@ compile_commands.json
 
 # macOS 시스템 파일
 .DS_Store
+
+# 환경 변수, 보안 및 로컬 워크스페이스
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+*.p12
+*credential*
+*secret*
+*.log
+*.local
+*.local.md
+.agents/
+.claude/
+.collab/
+.gemini/
