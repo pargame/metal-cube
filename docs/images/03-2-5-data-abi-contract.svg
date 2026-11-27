@@ -42,7 +42,7 @@
   <rect width="1376" height="768" fill="url(#bgGrad)"/>
 
   <!-- Title -->
-  <text x="68" y="88" class="font title">0.5. CPU ↔ GPU Data ABI Contract</text>
+  <text x="68" y="88" class="font title">5. CPU ↔ GPU Data ABI Contract</text>
 
   <!-- LEFT CARD: CPU -->
   <g filter="url(#cardShadow)">

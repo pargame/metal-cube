@@ -37,7 +37,7 @@
   <rect width="1376" height="768" fill="url(#bgGrad)"/>
 
   <!-- Title -->
-  <text x="68" y="88" class="font title">0.7. Pre-Compiled State (PSO) vs Dynamic State</text>
+  <text x="68" y="88" class="font title">7. Pre-Compiled State (PSO) vs Dynamic State</text>
 
   <!-- LEFT PANEL: Pre-Compiled Once -->
   <g filter="url(#cardShadow)">
