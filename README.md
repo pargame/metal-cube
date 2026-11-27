@@ -8,13 +8,13 @@ A hardware-accelerated 3D rotating cube application written in **pure C++ (`meta
 - **Modern C++26 + MSL (Metal Shading Language)**:
   - Direct integration with Apple's official `metal-cpp` ([English Guide](metal-cpp/README.md) | [한국어 가이드](metal-cpp/README_KO.md)) and `metal-cpp-extensions` without Objective-C bridges.
   - Idiomatic C++20/23/26 features: multidimensional subscript `operator[col, row]`, full RAII via `NS::SharedPtr` & `std::unique_ptr` (zero manual `release`/`delete`), `std::counting_semaphore`, `constexpr std::array`, `<numbers>`, `<print>`, C++26 `= delete("reason")`, and placeholder `_`.
-- **9-Stage Semantic Architecture Modularization**: Modularized 1:1 according to the [3D Space Rendering Semantic Design Document](docs/3d-rendering-semantics.md).
+- **0–9 Stage Semantic Architecture Modularization**: Modularized 1:1 according to the bootstrap lifecycle (Stage 0) and runtime pipeline (Stages 1–9) in the [3D Space Rendering Semantic Design Document](docs/3d-rendering-semantics.md).
   - `include/Math3D.hpp`: 4x4 homogeneous coordinate matrix operations for reference frame transformations (Change of Basis)
   - `include/World.hpp`: **[Stages 1–2]** Spatial ontology definitions and frame-independent temporal state transitions (`WorldState`)
-  - `include/Observer.hpp`: **[Stages 3–4]** Observer (camera) view transformation and 3D $\to$ 2D perspective projection (`Observer`)
-  - `include/Shaders.hpp`: **[Stages 4 & 7]** Step-by-step coordinate space transitions (`Local` $\to$ `World` $\to$ `View` $\to$ `Clip`) in the vertex shader and optical interaction evaluation in the fragment shader
-  - `include/Renderer.hpp`: **[Stages 4–9]** Back-face culling, spatial discretization, occlusion resolution (Z-buffer), perceptual mapping (sRGB), triple-buffered (`Triple Buffering` + semaphore) temporal isolation, and physical signal presentation (`CubeRenderer`)
-  - `metal_rotating_cube.cpp`: Runtime frame loop orchestration (`ViewDelegate`) and native window initialization
+  - `include/Observer.hpp`: **[Stages 3–4]** Observer (camera) view transformation and perspective projection (`Observer`)
+  - `include/Shaders.hpp`: **[Stages 4 & 7]** Step-by-step coordinate space transitions (`Local` → `World` → `View` → `Clip`) in the vertex shader and optical interaction evaluation in the fragment shader
+  - `include/Renderer.hpp`: **[Stage 0 & Stages 4–9]** Pipeline pre-compilation & resource contracts, back-face culling, spatial discretization, occlusion resolution (Z-buffer), perceptual mapping (sRGB), CPU↔GPU in-flight frame isolation (semaphore), and display presentation synchronization (`CubeRenderer`)
+  - `metal_rotating_cube.cpp`: **[Stage 0 & Orchestration]** OS window/surface/event-loop contracts and runtime frame loop orchestration (`AppDelegate`, `ViewDelegate`)
 - **One-Click Debugging in VSCode**: Instant execution via <kbd>F5</kbd> using `tasks.json` (Ninja build) and `launch.json` (CodeLLDB).
 
 ## Build and Run

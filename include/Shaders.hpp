@@ -10,7 +10,7 @@
 struct FrameUniforms {
     Matrix4x4 modelMatrix;                // 2단계: 개체 고유 공간(Local) -> 세계 공간(World)
     Matrix4x4 viewMatrix;                 // 3단계: 세계 공간(World) -> 관찰자 공간(View)
-    Matrix4x4 projectionMatrix;           // 4단계: 관찰자 공간(View) -> 클립/정규화 투영 공간(Clip/NDC)
+    Matrix4x4 projectionMatrix;           // 4단계: 관찰자 공간(View) -> 동차 절단 공간(Clip Space)
     std::array<float, 4> lightDirWorld{}; // 1단계 & 7단계: 세계 공간 기준 광원 방향 벡터
 };
 
@@ -58,11 +58,12 @@ inline constexpr const char* kShaderSource = R"(
         // 3. [3단계] 세계 공간(World) -> 관찰자 공간(View) 시점 변환
         float4 viewPos = uniforms.viewMatrix * worldPos;
 
-        // 4. [4단계] 관찰자 공간(View, 3D) -> 클립/정규화 투영 공간(Clip/NDC, 2D + Depth) 차원 축소
-        // 반환된 clipPosition은 GPU 고정 하드웨어에 의해 원근 분할(/w)되어 NDC 좌표로 변환됩니다.
+        // 4. [4단계] 관찰자 공간(View) -> 동차 절단 공간(Clip Space) 사영 변환
+        // 반환된 clipPosition은 GPU 고정 하드웨어에서 절두체 절단(w <= 0 포함) 후 원근 분할(/w)을 거쳐 NDC로 변환됩니다.
         out.clipPosition = uniforms.projectionMatrix * viewPos;
 
-        // 표면 법선 방향 벡터(동차 좌표 w = 0.0)를 세계 공간(World Space)으로 변환
+        // 표면 법선 방향 벡터(w = 0.0)를 세계 공간(World Space)으로 변환
+        // (현재 모델 변환은 순수 회전이라 modelMatrix 직접 적용이 성립하며, 비균등 스케일이 있다면 역전치 행렬이 필요)
         out.worldNormal = (uniforms.modelMatrix * float4(in.localNormal, 0.0)).xyz;
         out.albedo = in.albedo;
 
@@ -85,8 +86,8 @@ inline constexpr const char* kShaderSource = R"(
         float3 ambientRadiance = float3(0.25);
         float3 linearRadiance = in.albedo * (ambientRadiance + diffuseFactor * 0.75);
 
-        // 반환된 선형 색상 값은 8단계(인지적 색 공간 매핑 및 양자화)를 담당하는
-        // sRGB 렌더 타겟 하드웨어에 의해 인간 시각 특성에 맞춘 비선형 8비트 값으로 변환됩니다.
+        // 반환된 선형 색상 값은 별도 HDR 톤매핑 없이 LDR [0, 1] 클램프 후
+        // 8단계(sRGB 렌더 타겟 하드웨어)에서 비선형 감마 인코딩 및 8비트 양자화됩니다.
         return float4(linearRadiance, 1.0);
     }
 )";

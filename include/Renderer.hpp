@@ -21,9 +21,9 @@
 // GPU 하드웨어 파이프라인을 통해 최종 화면의 물리적 광신호로 변환하는 렌더러 클래스입니다.
 class CubeRenderer {
 public:
-    // [9단계: 시간적 격리(Triple Buffering)]
-    // CPU가 다음 프레임의 세계 상태를 기록하는 동안 GPU가 이전 프레임을 동시에 그릴 수 있도록
-    // 3개의 독립된 프레임 버퍼 슬롯을 운용합니다.
+    // [9단계: CPU↔GPU 프레임 자원 격리 (In-flight Frame Isolation)]
+    // CPU가 다음 프레임의 Uniform 상태를 기록하는 동안 GPU가 이전 프레임을 동시에 소비할 수 있도록
+    // 독립된 Uniform 버퍼 슬롯을 운용합니다. (디스플레이 출력용 드로어블 풀인 Triple Buffering과는 별개 계층)
     static constexpr std::size_t kMaxFramesInFlight = 3;
 
     explicit CubeRenderer(MTL::Device* pDevice)
@@ -93,9 +93,9 @@ public:
             // [6단계: 폐색 해결(깊이 판정) 상태 연결]
             pEnc->setDepthStencilState(_pDepthState.get());
 
-            // [4단계: 가시 영역 선별 (Back-face Culling)]
+            // [4~5단계 경계: 후면 제거 (Back-face Culling)]
             // 반시계 방향(CCW) 정점 순서로 정의된 면을 앞면으로 규정하고,
-            // 관찰자의 시선과 반대 방향을 향하는 후면(Back-face)은 보이지 않으므로 광학 연산 전에 즉시 배제합니다.
+            // 투영 후 화면 공간 와인딩 판정으로 관찰자 반대편을 향하는 후면(Back-face)을 이산화 직전에 배제합니다.
             pEnc->setFrontFacingWinding(MTL::WindingCounterClockwise);
             pEnc->setCullMode(MTL::CullModeBack);
 
