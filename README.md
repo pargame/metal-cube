@@ -1,6 +1,6 @@
 > 🌐 **Language:** **English** | [한국어](README_KO.md)
 
-# Metal Cube (Semantic 3D Cube — Metal · Vulkan · Direct3D 12)
+# Rotating Cube 3D (Semantic 3D Cube — Metal · Vulkan · Direct3D 12)
 
 A cross-platform 3D rotating cube project that shares a single **API-agnostic semantic core (Stages 1–4)** across three native backends — **Metal, Vulkan, and Direct3D 12** (Stage 0 & Stages 4–9) — for 1:1 architectural comparison.
 

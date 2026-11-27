@@ -135,8 +135,7 @@ public:
         uniforms.modelMatrix = world.computeModelMatrix();
         uniforms.viewMatrix = observer.computeViewMatrix();
         // [4단계: Vulkan의 +Y down NDC 규약 보정을 위해 flipY=true 적용]
-        // 코어 큐브 인덱스는 반시계(CCW)이나 flipY로 화면 공간 감기 방향이 반전되므로
-        // 파이프라인에서 VK_FRONT_FACE_CLOCKWISE를 앞면으로 지정합니다.
+        // Y축 반전으로 화면에 똑바로 투영되므로 Y-down 프레임버퍼에서 앞면은 음수 signed area(VK_FRONT_FACE_COUNTER_CLOCKWISE)가 됩니다.
         uniforms.projectionMatrix = observer.computeProjectionMatrix(aspectRatio, true);
         uniforms.lightDirWorld = world.lightDirectionWorld();
 
@@ -765,8 +764,8 @@ private:
         dynamicState.pDynamicStates = dynamicStates.data();
 
         // [4~5단계 경계: 후면 제거 (Back-face Culling) 및 5단계 이산화 설정]
-        // 코어 큐브 인덱스는 반시계(CCW)이지만, Vulkan의 +Y down NDC 보정(flipY=true)으로
-        // 화면 공간 정점 감기 방향이 반전되므로 VK_FRONT_FACE_CLOCKWISE를 앞면으로 지정합니다.
+        // Vulkan 프레임버퍼는 +Y down 좌표계이지만 flipY=true로 NDC Y축을 반전해 화면에 똑바로 세우므로,
+        // 코어 CCW 앞면의 프레임버퍼 signed area가 음수가 되어 VK_FRONT_FACE_COUNTER_CLOCKWISE가 앞면이 됩니다.
         VkPipelineRasterizationStateCreateInfo rasterizer{};
         rasterizer.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
         rasterizer.depthClampEnable = VK_FALSE;
@@ -774,7 +773,7 @@ private:
         rasterizer.polygonMode = VK_POLYGON_MODE_FILL;
         rasterizer.lineWidth = 1.0f;
         rasterizer.cullMode = VK_CULL_MODE_BACK_BIT;
-        rasterizer.frontFace = VK_FRONT_FACE_CLOCKWISE;
+        rasterizer.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
         rasterizer.depthBiasEnable = VK_FALSE;
 
         VkPipelineMultisampleStateCreateInfo multisampling{};

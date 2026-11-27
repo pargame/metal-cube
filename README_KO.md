@@ -1,6 +1,6 @@
 > 🌐 **언어 (Language):** [English](README.md) | **한국어**
 
-# Metal Cube (Semantic 3D Cube — Metal · Vulkan · Direct3D 12)
+# Rotating Cube 3D (Semantic 3D Cube — Metal · Vulkan · Direct3D 12)
 
 하나의 **API 비종속 의미론적 코어(1–4단계)** 위에 **Metal · Vulkan · Direct3D 12** 세 네이티브 백엔드(0단계 & 4–9단계)를 1:1로 대조 구현한 크로스플랫폼 3D 회전 큐브 프로젝트입니다.
 
