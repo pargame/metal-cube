@@ -1,0 +1,108 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1376 768" width="1376" height="768">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F6F8FC"/>
+      <stop offset="100%" stop-color="#EEF2F8"/>
+    </linearGradient>
+    <filter id="cardShadow" x="-4%" y="-6%" width="108%" height="114%">
+      <feDropShadow dx="0" dy="6" stdDeviation="10" flood-color="#0F172A" flood-opacity="0.06"/>
+    </filter>
+    <marker id="arrBlue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M 0 1.5 L 9 5 L 0 8.5 z" fill="#2563EB"/>
+    </marker>
+    <marker id="arrAmber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M 0 1.5 L 9 5 L 0 8.5 z" fill="#D97706"/>
+    </marker>
+    <style>
+      .font { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", Arial, sans-serif; }
+      .title { font-size: 38px; font-weight: 700; fill: #0F172A; letter-spacing: -0.6px; }
+      .panel-title { font-size: 22px; font-weight: 700; fill: #0F172A; }
+      .sub { font-size: 15px; font-weight: 500; fill: #475569; }
+      .pill-blue { font-size: 14px; font-weight: 700; fill: #1D4ED8; }
+      .pill-cyan { font-size: 14px; font-weight: 700; fill: #0369A1; }
+      .pill-amber { font-size: 14px; font-weight: 700; fill: #B45309; }
+      .bar-w { font-size: 15px; font-weight: 700; fill: #FFFFFF; }
+      .lane-lbl { font-size: 17px; font-weight: 700; fill: #0F172A; }
+    </style>
+  </defs>
+
+  <rect width="1376" height="768" fill="url(#bgGrad)"/>
+  <text x="68" y="84" class="font title">Stage 9. Dual Temporal Isolation &amp; Physical Display</text>
+
+  <!-- UPPER TRACK: Boundary 1 (CPU <-> GPU In-Flight Frame Isolation) -->
+  <g filter="url(#cardShadow)">
+    <rect x="68" y="122" width="1240" height="240" rx="20" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="2"/>
+  </g>
+  <rect x="102" y="146" width="320" height="32" rx="16" fill="#EFF6FF" stroke="#3B82F6"/>
+  <text x="262" y="167" text-anchor="middle" class="font pill-blue">Boundary 1 · CPU ↔ GPU In-Flight Slots</text>
+  <text x="1274" y="167" text-anchor="end" class="font pill-amber">Prevents Data Race Conditions</text>
+
+  <!-- CPU Lane -->
+  <text x="102" y="232" class="font lane-lbl">CPU (Record)</text>
+  <rect x="242" y="200" width="270" height="50" rx="10" fill="#2563EB"/>
+  <text x="377" y="231" text-anchor="middle" class="font bar-w">Frame N  (Slot 0)</text>
+  <rect x="536" y="200" width="270" height="50" rx="10" fill="#3B82F6"/>
+  <text x="671" y="231" text-anchor="middle" class="font bar-w">Frame N+1  (Slot 1)</text>
+  <rect x="830" y="200" width="270" height="50" rx="10" fill="#2563EB"/>
+  <text x="965" y="231" text-anchor="middle" class="font bar-w">Frame N+2  (Slot 0)</text>
+
+  <!-- GPU Lane -->
+  <text x="102" y="312" class="font lane-lbl">GPU (Execute)</text>
+  <rect x="536" y="280" width="270" height="50" rx="10" fill="#0EA5E9"/>
+  <text x="671" y="311" text-anchor="middle" class="font bar-w">Frame N  (Slot 0)</text>
+  <rect x="830" y="280" width="270" height="50" rx="10" fill="#0284C7"/>
+  <text x="965" y="311" text-anchor="middle" class="font bar-w">Frame N+1  (Slot 1)</text>
+
+  <!-- Sync Gate Marker between Slot 0 GPU end and Slot 0 CPU reuse -->
+  <line x1="818" y1="194" x2="818" y2="338" stroke="#F59E0B" stroke-width="2.6" stroke-dasharray="5,4"/>
+  <rect x="1126" y="220" width="148" height="90" rx="12" fill="#FFFBEB" stroke="#F59E0B" stroke-width="1.8"/>
+  <text x="1200" y="254" text-anchor="middle" class="font pill-amber">Fence /</text>
+  <text x="1200" y="276" text-anchor="middle" class="font pill-amber">Semaphore</text>
+  <text x="1200" y="298" text-anchor="middle" class="font" font-size="12" font-weight="600" fill="#92400E">Safe Slot Reuse</text>
+
+  <!-- LOWER TRACK: Boundary 2 (GPU <-> Display Presentation) -->
+  <g filter="url(#cardShadow)">
+    <rect x="68" y="388" width="1240" height="252" rx="20" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="2"/>
+  </g>
+  <rect x="102" y="412" width="336" height="32" rx="16" fill="#ECFEFF" stroke="#0EA5E9"/>
+  <text x="270" y="433" text-anchor="middle" class="font pill-cyan">Boundary 2 · GPU ↔ Display Swapchain</text>
+  <text x="1274" y="433" text-anchor="end" class="font pill-amber">Prevents Screen Tearing</text>
+
+  <!-- Back Buffer -->
+  <rect x="102" y="468" width="270" height="136" rx="16" fill="#EFF6FF" stroke="#3B82F6" stroke-width="2"/>
+  <text x="237" y="514" text-anchor="middle" class="font panel-title">Back Buffer</text>
+  <text x="237" y="544" text-anchor="middle" class="font sub">GPU actively renders</text>
+  <text x="237" y="568" text-anchor="middle" class="font pill-blue">Isolated from Display</text>
+
+  <!-- Atomic VSync Swap -->
+  <line x1="372" y1="536" x2="438" y2="536" stroke="#D97706" stroke-width="3" marker-end="url(#arrAmber)"/>
+  <rect x="448" y="486" width="156" height="100" rx="16" fill="#FFFBEB" stroke="#F59E0B" stroke-width="2"/>
+  <text x="526" y="528" text-anchor="middle" class="font pill-amber">Atomic Swap</text>
+  <text x="526" y="554" text-anchor="middle" class="font sub">at VSync Pulse</text>
+  <line x1="604" y1="536" x2="670" y2="536" stroke="#2563EB" stroke-width="3" marker-end="url(#arrBlue)"/>
+
+  <!-- Front Buffer -->
+  <rect x="680" y="468" width="256" height="136" rx="16" fill="#ECFEFF" stroke="#0EA5E9" stroke-width="2"/>
+  <text x="808" y="514" text-anchor="middle" class="font panel-title">Front Buffer</text>
+  <text x="808" y="544" text-anchor="middle" class="font sub">Display controller scans</text>
+  <text x="808" y="568" text-anchor="middle" class="font pill-cyan">Stable Complete Frame</text>
+
+  <!-- Transduction Arrow -> Physical Photons -->
+  <line x1="936" y1="536" x2="998" y2="536" stroke="#2563EB" stroke-width="3" marker-end="url(#arrBlue)"/>
+  <rect x="1008" y="468" width="266" height="136" rx="16" fill="#0F172A"/>
+  <!-- Glowing RGB Pixel Bars -->
+  <g transform="translate(1042, 494)">
+    <rect x="0" y="0" width="14" height="34" rx="3" fill="#EF4444"/>
+    <rect x="18" y="0" width="14" height="34" rx="3" fill="#22C55E"/>
+    <rect x="36" y="0" width="14" height="34" rx="3" fill="#3B82F6"/>
+  </g>
+  <text x="1114" y="514" class="font bar-w">OLED / LCD</text>
+  <text x="1114" y="538" class="font" font-size="14" font-weight="500" fill="#94A3B8">Bits → Photons</text>
+  <text x="1141" y="582" text-anchor="middle" class="font" font-size="14" font-weight="700" fill="#38BDF8">Physical Light to Human Eye</text>
+
+  <!-- BOTTOM TRADEOFF BAR -->
+  <g filter="url(#cardShadow)">
+    <rect x="68" y="666" width="1240" height="62" rx="16" fill="#FFFBEB" stroke="#F59E0B" stroke-width="1.8"/>
+  </g>
+  <text x="688" y="703" text-anchor="middle" class="font pill-amber">Design Tradeoff:  Deeper In-Flight / Swapchain Buffering  →  Higher Throughput &amp; Stability  ↔  Higher Input Latency</text>
+</svg>

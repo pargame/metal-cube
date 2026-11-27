@@ -1,0 +1,144 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1376 768" width="1376" height="768">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F6F8FC"/>
+      <stop offset="100%" stop-color="#EEF2F8"/>
+    </linearGradient>
+    <radialGradient id="litSphere" cx="35%" cy="30%" r="70%">
+      <stop offset="0%" stop-color="#E0F2FE"/>
+      <stop offset="35%" stop-color="#38BDF8"/>
+      <stop offset="75%" stop-color="#2563EB"/>
+      <stop offset="100%" stop-color="#1E3A8A"/>
+    </radialGradient>
+    <linearGradient id="rgbSpec" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#0F172A"/>
+      <stop offset="35%" stop-color="#2563EB"/>
+      <stop offset="70%" stop-color="#38BDF8"/>
+      <stop offset="100%" stop-color="#FEF3C7"/>
+    </linearGradient>
+    <filter id="cardShadow" x="-4%" y="-6%" width="108%" height="114%">
+      <feDropShadow dx="0" dy="6" stdDeviation="10" flood-color="#0F172A" flood-opacity="0.06"/>
+    </filter>
+    <marker id="arrAmber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M 0 1.5 L 9 5 L 0 8.5 z" fill="#F59E0B"/>
+    </marker>
+    <marker id="arrBlue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M 0 1.5 L 9 5 L 0 8.5 z" fill="#2563EB"/>
+    </marker>
+    <style>
+      .font { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", Arial, sans-serif; }
+      .mono { font-family: "SF Mono", ui-monospace, Menlo, Consolas, monospace; }
+      .title { font-size: 38px; font-weight: 700; fill: #0F172A; letter-spacing: -0.6px; }
+      .panel-title { font-size: 23px; font-weight: 700; fill: #0F172A; }
+      .sub { font-size: 15px; font-weight: 500; fill: #475569; }
+      .pill-amber { font-size: 14px; font-weight: 700; fill: #B45309; }
+      .pill-blue { font-size: 14px; font-weight: 700; fill: #1D4ED8; }
+      .pill-cyan { font-size: 14px; font-weight: 700; fill: #0369A1; }
+      .vec-lbl { font-size: 16px; font-weight: 700; fill: #0F172A; }
+      .step-title { font-size: 18px; font-weight: 700; fill: #0F172A; }
+    </style>
+  </defs>
+
+  <rect width="1376" height="768" fill="url(#bgGrad)"/>
+  <text x="68" y="84" class="font title">Stage 7–8. Optical Shading &amp; Perceptual Color Mapping</text>
+
+  <!-- LEFT PANEL: Stage 7 Optical Radiance -->
+  <g filter="url(#cardShadow)">
+    <rect x="68" y="128" width="560" height="580" rx="20" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="2"/>
+  </g>
+  <rect x="100" y="156" width="246" height="32" rx="16" fill="#FEF3C7" stroke="#F59E0B"/>
+  <text x="223" y="177" text-anchor="middle" class="font pill-amber">Stage 7 · Linear Radiance</text>
+  <text x="100" y="222" class="font panel-title">Light–Material Interaction</text>
+
+  <!-- Sun / Light Source -->
+  <g transform="translate(154, 286)">
+    <circle cx="0" cy="0" r="20" fill="#F59E0B"/>
+    <g stroke="#F59E0B" stroke-width="3" stroke-linecap="round">
+      <line x1="0" y1="-32" x2="0" y2="-25"/><line x1="0" y1="25" x2="0" y2="32"/>
+      <line x1="-32" y1="0" x2="-25" y2="0"/><line x1="25" y1="0" x2="32" y2="0"/>
+      <line x1="-22" y1="-22" x2="-17" y2="-17"/><line x1="17" y1="17" x2="22" y2="22"/>
+      <line x1="-22" y1="22" x2="-17" y2="17"/><line x1="17" y1="-17" x2="22" y2="-22"/>
+    </g>
+    <text x="0" y="54" text-anchor="middle" class="font pill-amber">Light Source</text>
+  </g>
+
+  <!-- Shaded 3D Sphere -->
+  <circle cx="348" cy="454" r="96" fill="url(#litSphere)" stroke="#1E3A8A" stroke-width="2"/>
+  <!-- Surface Point -->
+  <circle cx="348" cy="358" r="5" fill="#F59E0B" stroke="#FFFFFF" stroke-width="2"/>
+
+  <!-- Vectors: L (Light), N (Normal), V (View) -->
+  <line x1="178" y1="302" x2="338" y2="354" stroke="#F59E0B" stroke-width="3" marker-end="url(#arrAmber)"/>
+  <text x="248" y="316" class="mono vec-lbl" fill="#B45309">L</text>
+
+  <line x1="348" y1="358" x2="348" y2="262" stroke="#0EA5E9" stroke-width="3" marker-end="url(#arrBlue)"/>
+  <text x="362" y="284" class="mono vec-lbl" fill="#0369A1">N (Normal)</text>
+
+  <line x1="356" y1="354" x2="508" y2="292" stroke="#2563EB" stroke-width="3" marker-end="url(#arrBlue)"/>
+  <text x="454" y="340" class="mono vec-lbl" fill="#1D4ED8">V (View)</text>
+
+  <!-- Eye / Sensor icon at top right -->
+  <g transform="translate(520, 274)">
+    <path d="M0,14 Q22,-4 44,14 Q22,32 0,14 Z" fill="#EFF6FF" stroke="#2563EB" stroke-width="2.4"/>
+    <circle cx="22" cy="14" r="7" fill="#2563EB"/>
+    <text x="22" y="46" text-anchor="middle" class="font pill-blue">Eye</text>
+  </g>
+
+  <!-- Stage 7 Summary Box -->
+  <rect x="100" y="582" width="496" height="92" rx="14" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1.8"/>
+  <text x="348" y="616" text-anchor="middle" class="mono pill-blue">Output: Unbounded Linear HDR Radiance [0, ∞)</text>
+  <text x="348" y="648" text-anchor="middle" class="font sub">Turns flat silhouette into 3D form via Albedo, Roughness &amp; Normals.</text>
+
+  <!-- Connecting Arrow Stage 7 -> Stage 8 -->
+  <line x1="628" y1="418" x2="664" y2="418" stroke="#2563EB" stroke-width="3.2" marker-end="url(#arrBlue)"/>
+
+  <!-- RIGHT PANEL: Stage 8 Perceptual Mapping & Quantization -->
+  <g filter="url(#cardShadow)">
+    <rect x="676" y="128" width="632" height="580" rx="20" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="2"/>
+  </g>
+  <rect x="708" y="156" width="296" height="32" rx="16" fill="#EFF6FF" stroke="#3B82F6"/>
+  <text x="856" y="177" text-anchor="middle" class="font pill-blue">Stage 8 · Display &amp; Perception</text>
+  <text x="708" y="222" class="font panel-title">HDR → sRGB Gamma → Discrete Bits</text>
+
+  <!-- Step 8.1: Tone Mapping -->
+  <rect x="708" y="252" width="568" height="122" rx="14" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1.8"/>
+  <!-- Tone curve mini graph -->
+  <g transform="translate(730, 272)">
+    <rect x="0" y="0" width="96" height="82" rx="8" fill="#FFFFFF" stroke="#CBD5E1"/>
+    <line x1="12" y1="70" x2="86" y2="70" stroke="#94A3B8" stroke-width="1.5"/>
+    <line x1="12" y1="70" x2="12" y2="12" stroke="#94A3B8" stroke-width="1.5"/>
+    <path d="M 12 70 C 30 68, 42 24, 84 16" fill="none" stroke="#F59E0B" stroke-width="3" stroke-linecap="round"/>
+  </g>
+  <text x="846" y="294" class="font step-title">1. Dynamic Range Compression (Tone Map)</text>
+  <text x="846" y="322" class="font sub">Compresses unbounded HDR [0, ∞) into display [0, 1].</text>
+  <text x="846" y="348" class="font pill-amber">Prevents bright highlight clipping · Linear blending runs before this</text>
+
+  <!-- Step 8.2: sRGB Gamma Encoding -->
+  <rect x="708" y="394" width="568" height="122" rx="14" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1.8"/>
+  <g transform="translate(730, 414)">
+    <rect x="0" y="0" width="96" height="82" rx="8" fill="#FFFFFF" stroke="#CBD5E1"/>
+    <line x1="12" y1="70" x2="86" y2="70" stroke="#94A3B8" stroke-width="1.5"/>
+    <line x1="12" y1="70" x2="12" y2="12" stroke="#94A3B8" stroke-width="1.5"/>
+    <line x1="12" y1="70" x2="84" y2="14" stroke="#CBD5E1" stroke-width="1.5" stroke-dasharray="4,3"/>
+    <path d="M 12 70 Q 24 22 84 14" fill="none" stroke="#2563EB" stroke-width="3" stroke-linecap="round"/>
+  </g>
+  <text x="846" y="436" class="font step-title">2. Perceptual Gamma Encoding (sRGB)</text>
+  <text x="846" y="464" class="font sub">Matches non-linear human eye sensitivity &amp; display gamut.</text>
+  <text x="846" y="490" class="font pill-blue">Allocates more precision to dark tones (often hardware _sRGB)</text>
+
+  <!-- Step 8.3: Quantization -->
+  <rect x="708" y="536" width="568" height="138" rx="14" fill="#EFF6FF" stroke="#3B82F6" stroke-width="1.8"/>
+  <text x="734" y="572" class="font step-title">3. Bit-Depth Quantization (8-bit / 10-bit Integers)</text>
+  <text x="734" y="598" class="font sub">Rounds continuous float values into discrete RGB channel levels (0–255 / 0–1023).</text>
+  <!-- Stepped color bar -->
+  <g transform="translate(734, 616)">
+    <rect x="0" y="0" width="64" height="36" rx="6" fill="#0F172A"/>
+    <rect x="68" y="0" width="64" height="36" rx="6" fill="#1E3A8A"/>
+    <rect x="136" y="0" width="64" height="36" rx="6" fill="#2563EB"/>
+    <rect x="204" y="0" width="64" height="36" rx="6" fill="#3B82F6"/>
+    <rect x="272" y="0" width="64" height="36" rx="6" fill="#0EA5E9"/>
+    <rect x="340" y="0" width="64" height="36" rx="6" fill="#38BDF8"/>
+    <rect x="408" y="0" width="64" height="36" rx="6" fill="#BAE6FD"/>
+    <rect x="476" y="0" width="40" height="36" rx="6" fill="#F8FAFC" stroke="#CBD5E1"/>
+  </g>
+</svg>

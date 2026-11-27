@@ -1,0 +1,96 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1376 768" width="1376" height="768">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F6F8FC"/>
+      <stop offset="100%" stop-color="#EEF2F8"/>
+    </linearGradient>
+    <filter id="cardShadow" x="-4%" y="-6%" width="108%" height="114%">
+      <feDropShadow dx="0" dy="6" stdDeviation="10" flood-color="#0F172A" flood-opacity="0.06"/>
+    </filter>
+    <marker id="arrBlue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M 0 1.5 L 9 5 L 0 8.5 z" fill="#2563EB"/>
+    </marker>
+    <style>
+      .font { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", Arial, sans-serif; }
+      .mono { font-family: "SF Mono", ui-monospace, Menlo, Consolas, monospace; }
+      .title { font-size: 38px; font-weight: 700; fill: #0F172A; letter-spacing: -0.6px; }
+      .panel-title { font-size: 23px; font-weight: 700; fill: #0F172A; }
+      .sub { font-size: 15px; font-weight: 500; fill: #475569; }
+      .pill-blue { font-size: 14px; font-weight: 700; fill: #1D4ED8; }
+      .pill-cyan { font-size: 14px; font-weight: 700; fill: #0369A1; }
+      .pill-amber { font-size: 14px; font-weight: 700; fill: #B45309; }
+      .white-lbl { font-size: 15px; font-weight: 700; fill: #FFFFFF; }
+    </style>
+  </defs>
+
+  <rect width="1376" height="768" fill="url(#bgGrad)"/>
+  <text x="68" y="84" class="font title">Stage 6. Occlusion Resolution: Opaque vs Translucent</text>
+
+  <!-- LEFT PANEL: Opaque (Depth Buffer) -->
+  <g filter="url(#cardShadow)">
+    <rect x="68" y="128" width="600" height="580" rx="20" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="2"/>
+  </g>
+  <rect x="100" y="156" width="234" height="32" rx="16" fill="#EFF6FF" stroke="#3B82F6"/>
+  <text x="217" y="177" text-anchor="middle" class="font pill-blue">Opaque · Depth Buffer (Z-Test)</text>
+  <text x="100" y="222" class="font panel-title">Nearest Surface Wins &amp; Discards Back</text>
+
+  <!-- Side-view Ray & Depth Diagram -->
+  <g transform="translate(106, 268)">
+    <!-- Eye / Camera -->
+    <rect x="0" y="96" width="44" height="32" rx="6" fill="#1E293B"/>
+    <polygon points="44,102 62,90 62,134 44,122" fill="#2563EB"/>
+
+    <!-- Pixel Sightline Ray -->
+    <line x1="62" y1="112" x2="210" y2="112" stroke="#2563EB" stroke-width="3" marker-end="url(#arrBlue)"/>
+    <line x1="256" y1="112" x2="394" y2="112" stroke="#94A3B8" stroke-width="2.4" stroke-dasharray="6,5"/>
+
+    <!-- Front Opaque Surface (z = 0.3) -->
+    <rect x="220" y="42" width="34" height="140" rx="8" fill="#2563EB"/>
+    <text x="237" y="26" text-anchor="middle" class="mono pill-blue">z = 0.3</text>
+    <text x="237" y="206" text-anchor="middle" class="font pill-blue">Front (Visible)</text>
+
+    <!-- Back Opaque Surface (z = 0.7) -->
+    <rect x="398" y="42" width="34" height="140" rx="8" fill="#E2E8F0" stroke="#94A3B8" stroke-width="2" stroke-dasharray="5,4"/>
+    <text x="415" y="26" text-anchor="middle" class="mono sub">z = 0.7</text>
+    <text x="415" y="206" text-anchor="middle" class="font sub">Occluded (Discarded)</text>
+
+    <!-- Depth Comparison Box -->
+    <rect x="0" y="252" width="524" height="114" rx="14" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1.8"/>
+    <text x="262" y="286" text-anchor="middle" class="mono pill-blue">Depth Test:  0.3 &lt; 0.7  →  Keep Front Only</text>
+    <text x="262" y="318" text-anchor="middle" class="font sub">Prevents back objects from bleeding through front ones</text>
+    <text x="262" y="344" text-anchor="middle" class="font sub">and avoids wasting shading cost on hidden surfaces.</text>
+  </g>
+
+  <!-- RIGHT PANEL: Translucent (Blending / OIT) -->
+  <g filter="url(#cardShadow)">
+    <rect x="708" y="128" width="600" height="580" rx="20" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="2"/>
+  </g>
+  <rect x="740" y="156" width="276" height="32" rx="16" fill="#FEF3C7" stroke="#F59E0B"/>
+  <text x="878" y="177" text-anchor="middle" class="font pill-amber">Translucent Exception · Blending</text>
+  <text x="740" y="222" class="font panel-title">Multi-Surface Accumulation (Sorted / OIT)</text>
+
+  <g transform="translate(746, 268)">
+    <!-- Eye / Camera -->
+    <rect x="0" y="96" width="44" height="32" rx="6" fill="#1E293B"/>
+    <polygon points="44,102 62,90 62,134 44,122" fill="#0EA5E9"/>
+
+    <!-- Light passes through glass to back -->
+    <line x1="62" y1="112" x2="386" y2="112" stroke="#0EA5E9" stroke-width="3" marker-end="url(#arrBlue)"/>
+
+    <!-- Translucent Glass Layer (z = 0.3, alpha 40%) -->
+    <rect x="220" y="42" width="34" height="140" rx="8" fill="#38BDF8" fill-opacity="0.38" stroke="#0EA5E9" stroke-width="2.4"/>
+    <text x="237" y="26" text-anchor="middle" class="mono pill-cyan">α = 0.4</text>
+    <text x="237" y="206" text-anchor="middle" class="font pill-cyan">Glass (Transmits)</text>
+
+    <!-- Back Opaque Surface (z = 0.7) -->
+    <rect x="398" y="42" width="34" height="140" rx="8" fill="#2563EB"/>
+    <text x="415" y="26" text-anchor="middle" class="mono pill-blue">z = 0.7</text>
+    <text x="415" y="206" text-anchor="middle" class="font pill-blue">Back (Still Visible)</text>
+
+    <!-- Blending Formula Box -->
+    <rect x="0" y="252" width="524" height="114" rx="14" fill="#FFFBEB" stroke="#F59E0B" stroke-width="1.8"/>
+    <text x="262" y="286" text-anchor="middle" class="mono pill-amber">C_out = α · C_front + (1 − α) · C_back</text>
+    <text x="262" y="318" text-anchor="middle" class="font sub">Single-surface discard fails for glass or volumetric media.</text>
+    <text x="262" y="344" text-anchor="middle" class="font sub">Must sort Back-to-Front (or use OIT) in Linear Color Space.</text>
+  </g>
+</svg>

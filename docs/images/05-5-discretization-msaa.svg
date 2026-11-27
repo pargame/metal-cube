@@ -1,0 +1,116 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1376 768" width="1376" height="768">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F6F8FC"/>
+      <stop offset="100%" stop-color="#EEF2F8"/>
+    </linearGradient>
+    <filter id="cardShadow" x="-4%" y="-6%" width="108%" height="114%">
+      <feDropShadow dx="0" dy="6" stdDeviation="10" flood-color="#0F172A" flood-opacity="0.06"/>
+    </filter>
+    <style>
+      .font { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", Arial, sans-serif; }
+      .title { font-size: 38px; font-weight: 700; fill: #0F172A; letter-spacing: -0.6px; }
+      .panel-title { font-size: 23px; font-weight: 700; fill: #0F172A; }
+      .sub { font-size: 15px; font-weight: 500; fill: #475569; }
+      .pill-red { font-size: 14px; font-weight: 700; fill: #DC2626; }
+      .pill-blue { font-size: 14px; font-weight: 700; fill: #1D4ED8; }
+      .pill-cyan { font-size: 14px; font-weight: 700; fill: #0369A1; }
+    </style>
+  </defs>
+
+  <rect width="1376" height="768" fill="url(#bgGrad)"/>
+  <text x="68" y="84" class="font title">Stage 5. Spatial Discretization, Sampling &amp; MSAA</text>
+
+  <!-- LEFT PANEL: 1x Sampling (Aliasing) -->
+  <g filter="url(#cardShadow)">
+    <rect x="68" y="128" width="600" height="510" rx="20" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="2"/>
+  </g>
+  <rect x="100" y="156" width="228" height="32" rx="16" fill="#FEE2E2" stroke="#EF4444"/>
+  <text x="214" y="177" text-anchor="middle" class="font pill-red">1 Sample / Pixel · Aliasing</text>
+  <text x="100" y="222" class="font panel-title">Binary Coverage (Jaggies)</text>
+
+  <!-- 5x4 Pixel Grid (each cell 64x64 => 320x256, centered at x=208, y=252) -->
+  <g transform="translate(208, 252)">
+    <!-- Covered pixels (binary ON) -->
+    <rect x="64" y="64" width="64" height="64" fill="#3B82F6"/>
+    <rect x="64" y="128" width="64" height="64" fill="#3B82F6"/>
+    <rect x="128" y="128" width="64" height="64" fill="#3B82F6"/>
+    <rect x="64" y="192" width="64" height="64" fill="#3B82F6"/>
+    <rect x="128" y="192" width="64" height="64" fill="#3B82F6"/>
+    <rect x="192" y="192" width="64" height="64" fill="#3B82F6"/>
+    <!-- Grid lines -->
+    <g fill="none" stroke="#CBD5E1" stroke-width="1.6">
+      <rect x="0" y="0" width="320" height="256"/>
+      <line x1="64" y1="0" x2="64" y2="256"/><line x1="128" y1="0" x2="128" y2="256"/>
+      <line x1="192" y1="0" x2="192" y2="256"/><line x1="256" y1="0" x2="256" y2="256"/>
+      <line x1="0" y1="64" x2="320" y2="64"/><line x1="0" y1="128" x2="320" y2="128"/>
+      <line x1="0" y1="192" x2="320" y2="192"/>
+    </g>
+    <!-- Continuous Triangle Overlay -->
+    <polygon points="74,20 294,244 46,244" fill="#0EA5E9" fill-opacity="0.16" stroke="#0F172A" stroke-width="2.6" stroke-linejoin="round"/>
+    <!-- Center sample dots -->
+    <g fill="#FFFFFF" stroke="#0F172A" stroke-width="1.5">
+      <circle cx="96" cy="32" r="4"/><circle cx="160" cy="32" r="4"/>
+      <circle cx="96" cy="96" r="4" fill="#F59E0B"/><circle cx="160" cy="96" r="4"/>
+      <circle cx="96" cy="160" r="4" fill="#F59E0B"/><circle cx="160" cy="160" r="4" fill="#F59E0B"/><circle cx="224" cy="160" r="4"/>
+      <circle cx="96" cy="224" r="4" fill="#F59E0B"/><circle cx="160" cy="224" r="4" fill="#F59E0B"/><circle cx="224" cy="224" r="4" fill="#F59E0B"/>
+    </g>
+  </g>
+  <text x="368" y="548" text-anchor="middle" class="font sub">Center point is either 100% inside or 0% outside.</text>
+  <text x="368" y="574" text-anchor="middle" class="font sub">Produces harsh stair-step edges (Aliasing).</text>
+
+  <!-- RIGHT PANEL: 4x MSAA -->
+  <g filter="url(#cardShadow)">
+    <rect x="708" y="128" width="600" height="510" rx="20" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="2"/>
+  </g>
+  <rect x="740" y="156" width="246" height="32" rx="16" fill="#EFF6FF" stroke="#3B82F6"/>
+  <text x="863" y="177" text-anchor="middle" class="font pill-blue">4× Sub-Samples · MSAA</text>
+  <text x="740" y="222" class="font panel-title">Fractional Coverage (Smooth Edges)</text>
+
+  <!-- 5x4 Pixel Grid with partial alpha coverage -->
+  <g transform="translate(848, 252)">
+    <!-- Partial edge coverage -->
+    <rect x="64" y="0" width="64" height="64" fill="#3B82F6" fill-opacity="0.30"/>
+    <rect x="64" y="64" width="64" height="64" fill="#3B82F6" fill-opacity="0.80"/>
+    <rect x="128" y="64" width="64" height="64" fill="#3B82F6" fill-opacity="0.25"/>
+    <rect x="0" y="128" width="64" height="64" fill="#3B82F6" fill-opacity="0.25"/>
+    <rect x="64" y="128" width="64" height="64" fill="#3B82F6" fill-opacity="1.0"/>
+    <rect x="128" y="128" width="64" height="64" fill="#3B82F6" fill-opacity="0.75"/>
+    <rect x="192" y="128" width="64" height="64" fill="#3B82F6" fill-opacity="0.25"/>
+    <rect x="0" y="192" width="64" height="64" fill="#3B82F6" fill-opacity="0.30"/>
+    <rect x="64" y="192" width="64" height="64" fill="#3B82F6" fill-opacity="1.0"/>
+    <rect x="128" y="192" width="64" height="64" fill="#3B82F6" fill-opacity="1.0"/>
+    <rect x="192" y="192" width="64" height="64" fill="#3B82F6" fill-opacity="0.80"/>
+    <rect x="256" y="192" width="64" height="64" fill="#3B82F6" fill-opacity="0.25"/>
+    <!-- Grid lines -->
+    <g fill="none" stroke="#CBD5E1" stroke-width="1.6">
+      <rect x="0" y="0" width="320" height="256"/>
+      <line x1="64" y1="0" x2="64" y2="256"/><line x1="128" y1="0" x2="128" y2="256"/>
+      <line x1="192" y1="0" x2="192" y2="256"/><line x1="256" y1="0" x2="256" y2="256"/>
+      <line x1="0" y1="64" x2="320" y2="64"/><line x1="0" y1="128" x2="320" y2="128"/>
+      <line x1="0" y1="192" x2="320" y2="192"/>
+    </g>
+    <!-- Continuous Triangle Overlay -->
+    <polygon points="74,20 294,244 46,244" fill="none" stroke="#0F172A" stroke-width="2.6" stroke-linejoin="round"/>
+    <!-- 4x sub-sample dots on a sample edge cell (128, 64) -->
+    <g stroke="#0F172A" stroke-width="1.2">
+      <circle cx="146" cy="82" r="3" fill="#FFFFFF"/>
+      <circle cx="174" cy="86" r="3" fill="#FFFFFF"/>
+      <circle cx="142" cy="110" r="3" fill="#F59E0B"/>
+      <circle cx="170" cy="114" r="3" fill="#FFFFFF"/>
+      <!-- And cell (128, 128) -->
+      <circle cx="146" cy="146" r="3" fill="#F59E0B"/>
+      <circle cx="174" cy="150" r="3" fill="#FFFFFF"/>
+      <circle cx="142" cy="174" r="3" fill="#F59E0B"/>
+      <circle cx="170" cy="178" r="3" fill="#F59E0B"/>
+    </g>
+  </g>
+  <text x="1008" y="548" text-anchor="middle" class="font sub">4 sub-samples per pixel yield 25% / 50% / 75% edge blend.</text>
+  <text x="1008" y="574" text-anchor="middle" class="font sub">Preserves smooth silhouettes on discrete pixel grids.</text>
+
+  <!-- Bottom Banner: Perspective-Correct Interpolation -->
+  <g filter="url(#cardShadow)">
+    <rect x="68" y="662" width="1240" height="62" rx="16" fill="#EFF6FF" stroke="#3B82F6" stroke-width="1.8"/>
+  </g>
+  <text x="688" y="699" text-anchor="middle" class="font pill-blue">Per-Pixel Attributes (Normals, UVs, Colors) are interpolated using Perspective-Correct (1/w) Interpolation</text>
+</svg>

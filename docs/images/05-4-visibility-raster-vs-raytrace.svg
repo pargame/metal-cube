@@ -1,0 +1,132 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1376 768" width="1376" height="768">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F6F8FC"/>
+      <stop offset="100%" stop-color="#EEF2F8"/>
+    </linearGradient>
+    <filter id="cardShadow" x="-4%" y="-6%" width="108%" height="114%">
+      <feDropShadow dx="0" dy="6" stdDeviation="10" flood-color="#0F172A" flood-opacity="0.06"/>
+    </filter>
+    <marker id="arrBlue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M 0 1.5 L 9 5 L 0 8.5 z" fill="#2563EB"/>
+    </marker>
+    <marker id="arrCyan" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M 0 1.5 L 9 5 L 0 8.5 z" fill="#0EA5E9"/>
+    </marker>
+    <style>
+      .font { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", Arial, sans-serif; }
+      .title { font-size: 38px; font-weight: 700; fill: #0F172A; letter-spacing: -0.6px; }
+      .panel-title { font-size: 23px; font-weight: 700; fill: #0F172A; }
+      .sub { font-size: 15px; font-weight: 500; fill: #475569; }
+      .lbl-blue { font-size: 14px; font-weight: 700; fill: #1D4ED8; }
+      .lbl-cyan { font-size: 14px; font-weight: 700; fill: #0369A1; }
+      .lbl-amber { font-size: 14px; font-weight: 700; fill: #B45309; }
+      .lbl-red { font-size: 14px; font-weight: 700; fill: #DC2626; }
+      .box-w { font-size: 16px; font-weight: 700; fill: #FFFFFF; }
+      .box-sub { font-size: 13px; font-weight: 500; fill: #E0F2FE; }
+    </style>
+  </defs>
+
+  <rect width="1376" height="768" fill="url(#bgGrad)"/>
+  <text x="68" y="84" class="font title">Stage 4. Culling, Clipping &amp; Visibility Query</text>
+
+  <!-- LEFT PANEL: Frustum Culling & Clipping -->
+  <g filter="url(#cardShadow)">
+    <rect x="68" y="128" width="600" height="580" rx="20" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="2"/>
+  </g>
+  <rect x="100" y="156" width="248" height="32" rx="16" fill="#EFF6FF" stroke="#3B82F6"/>
+  <text x="224" y="177" text-anchor="middle" class="font lbl-blue">Early Geometry Elimination</text>
+  <text x="100" y="222" class="font panel-title">Frustum Culling, Clipping &amp; Back-face</text>
+
+  <!-- Viewing Frustum Diagram -->
+  <g transform="translate(110, 260)">
+    <!-- Frustum cone -->
+    <polygon points="88,108 446,12 446,244 88,148" fill="#EFF6FF" stroke="#2563EB" stroke-width="2.2"/>
+    <!-- Camera -->
+    <rect x="6" y="112" width="44" height="32" rx="6" fill="#1E293B"/>
+    <polygon points="50,118 68,106 68,150 50,138" fill="#2563EB"/>
+    <!-- Near / Far labels -->
+    <text x="94" y="100" class="font sub">Near</text>
+    <text x="454" y="26" class="font sub">Far</text>
+
+    <!-- 1. Inside object (Kept) -->
+    <g transform="translate(260, 128)">
+      <polygon points="0,-32 30,-16 0,0 -30,-16" fill="#38BDF8" stroke="#0F172A" stroke-width="2" stroke-linejoin="round"/>
+      <polygon points="-30,-16 0,0 0,32 -30,16" fill="#2563EB" stroke="#0F172A" stroke-width="2" stroke-linejoin="round"/>
+      <polygon points="30,-16 0,0 0,32 30,16" fill="#0EA5E9" stroke="#0F172A" stroke-width="2" stroke-linejoin="round"/>
+      <text x="0" y="54" text-anchor="middle" class="font lbl-blue">Visible (Kept)</text>
+    </g>
+
+    <!-- 2. Outside object (Frustum Culled) -->
+    <g transform="translate(220, 26)">
+      <rect x="-20" y="-18" width="40" height="36" rx="6" fill="#F1F5F9" stroke="#94A3B8" stroke-width="2" stroke-dasharray="4,3"/>
+      <line x1="-10" y1="-8" x2="10" y2="8" stroke="#EF4444" stroke-width="2.5"/>
+      <line x1="10" y1="-8" x2="-10" y2="8" stroke="#EF4444" stroke-width="2.5"/>
+      <text x="34" y="5" class="font lbl-red">Frustum Culled</text>
+    </g>
+
+    <!-- 3. Boundary object (Clipped) -->
+    <g transform="translate(364, 218)">
+      <rect x="-24" y="-16" width="48" height="32" rx="4" fill="#FEF3C7" stroke="#F59E0B" stroke-width="2"/>
+      <line x1="-36" y1="0" x2="36" y2="0" stroke="#D97706" stroke-width="2.4" stroke-dasharray="5,3"/>
+      <text x="0" y="34" text-anchor="middle" class="font lbl-amber">Boundary Clipped</text>
+    </g>
+
+    <!-- 4. Back-face Culling callout -->
+    <g transform="translate(24, 276)">
+      <rect x="0" y="0" width="470" height="92" rx="14" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1.8"/>
+      <text x="20" y="32" class="font lbl-blue">Back-face Culling (4–5 Stage Boundary)</text>
+      <text x="20" y="58" class="font sub">Faces pointing away from camera (reversed winding) are</text>
+      <text x="20" y="79" class="font sub">discarded before rasterization (~50% of closed meshes).</text>
+    </g>
+  </g>
+
+  <!-- RIGHT PANEL: Rasterization vs Ray Tracing -->
+  <g filter="url(#cardShadow)">
+    <rect x="708" y="128" width="600" height="580" rx="20" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="2"/>
+  </g>
+  <rect x="740" y="156" width="276" height="32" rx="16" fill="#ECFEFF" stroke="#0EA5E9"/>
+  <text x="878" y="177" text-anchor="middle" class="font lbl-cyan">Algorithm-Agnostic Essence</text>
+  <text x="740" y="222" class="font panel-title">Visibility Query: Two Loop Orders</text>
+
+  <!-- Track A: Rasterization (Object-Order) -->
+  <rect x="740" y="254" width="536" height="184" rx="16" fill="#F8FAFC" stroke="#3B82F6" stroke-width="2"/>
+  <text x="764" y="288" class="font lbl-blue">Rasterization · Object-Order (Loop over Triangles)</text>
+
+  <rect x="764" y="310" width="144" height="74" rx="12" fill="#2563EB"/>
+  <text x="836" y="343" text-anchor="middle" class="font box-w">4. Project</text>
+  <text x="836" y="366" text-anchor="middle" class="font box-sub">3D → NDC</text>
+
+  <line x1="908" y1="347" x2="934" y2="347" stroke="#2563EB" stroke-width="2.6" marker-end="url(#arrBlue)"/>
+
+  <rect x="944" y="310" width="144" height="74" rx="12" fill="#3B82F6"/>
+  <text x="1016" y="343" text-anchor="middle" class="font box-w">5. Rasterize</text>
+  <text x="1016" y="366" text-anchor="middle" class="font box-sub">Fill Pixel Grid</text>
+
+  <line x1="1088" y1="347" x2="1114" y2="347" stroke="#2563EB" stroke-width="2.6" marker-end="url(#arrBlue)"/>
+
+  <rect x="1124" y="310" width="132" height="74" rx="12" fill="#1D4ED8"/>
+  <text x="1190" y="343" text-anchor="middle" class="font box-w">6. Z-Test</text>
+  <text x="1190" y="366" text-anchor="middle" class="font box-sub">Keep Nearest</text>
+
+  <text x="764" y="416" class="font sub">Projects each object onto the screen, then resolves depth per pixel.</text>
+
+  <!-- Track B: Ray Tracing (Image-Order) -->
+  <rect x="740" y="462" width="536" height="184" rx="16" fill="#F0F9FF" stroke="#0EA5E9" stroke-width="2"/>
+  <text x="764" y="496" class="font lbl-cyan">Ray Tracing · Image-Order (Loop over Pixels)</text>
+
+  <rect x="764" y="518" width="214" height="74" rx="12" fill="#0EA5E9"/>
+  <text x="871" y="551" text-anchor="middle" class="font box-w">5. Sample Rays</text>
+  <text x="871" y="574" text-anchor="middle" class="font box-sub">Cast from 2D Sensor Grid</text>
+
+  <line x1="978" y1="555" x2="1014" y2="555" stroke="#0EA5E9" stroke-width="2.6" marker-end="url(#arrCyan)"/>
+
+  <rect x="1024" y="518" width="232" height="74" rx="12" fill="#0284C7"/>
+  <text x="1140" y="551" text-anchor="middle" class="font box-w">4 &amp; 6. Ray Intersect</text>
+  <text x="1140" y="574" text-anchor="middle" class="font box-sub">Closest 3D Hit Directly</text>
+
+  <text x="764" y="624" class="font sub">Casts rays from each pixel into 3D space without NDC rasterization.</text>
+
+  <!-- Right Bottom Summary -->
+  <text x="1008" y="684" text-anchor="middle" class="font sub">Both answer the exact same question: "Which surface is visible at each pixel?"</text>
+</svg>
