@@ -31,14 +31,14 @@ public:
         // 화면 렌더링 여부나 방식에 종속되지 않고, 경과 시간(dt)에 따라 가상 세계의 상태를 먼저 갱신합니다.
         _world.updateSimulation();
 
-        // [3단계 ~ 9단계: 관찰자 기준 시점 변환, 차원 축소, 이산화, 폐색 해결, 광학 해석, 인지 매핑 및 신호 표출]
+        // [3단계 ~ 9단계: 관찰자 기준 시점 변환, 사영 변환, 이산화, 폐색 해결, 광학 해석, 인지 매핑 및 신호 표출]
         // 갱신된 세계 상태(_world)를 관찰자(_observer)의 시선으로 관측하여 화면(pView)의 물리적 화소로 변환합니다.
         _pRenderer->renderFrame(pView, _world, _observer);
     }
 
 private:
     WorldState _world;                         // 1~2단계: 가상 공간의 존재론적 데이터 및 시간 전이 상태
-    Observer _observer;                        // 3~4단계: 공간을 관측하는 관찰자(카메라) 및 차원 축소 규격
+    Observer _observer;                        // 3~4단계: 공간을 관측하는 관찰자(카메라) 및 원근 사영 규격
     std::unique_ptr<CubeRenderer> _pRenderer;  // 4~9단계: GPU 하드웨어 렌더링 파이프라인 및 동기화 표출기
 };
 

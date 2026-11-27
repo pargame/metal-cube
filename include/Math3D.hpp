@@ -60,8 +60,8 @@ struct Matrix4x4 {
         return r;
     }
 
-    // [4단계: 차원 축소] 3차원 관찰자 공간(View Space)의 시야 절두체를
-    // Metal 규격의 정규화 투영 공간(NDC: X, Y in [-1, 1], Z in [0, 1])으로 압축하는 원근 투영 행렬
+    // [4단계: 사영 변환] 3차원 관찰자 공간(View Space)의 시야 절두체를 동차 절단 공간(Clip Space)으로 사영하며,
+    // 원근 분할(/w) 후 Metal 규격의 정규화 투영 공간(NDC: X, Y in [-1, 1], Z in [0, 1])가 되는 원근 투영 행렬
     static Matrix4x4 perspective(float fovyRad, float aspect, float nearZ, float farZ) noexcept {
         Matrix4x4 r{};
         float tanHalfFov = std::tan(fovyRad * 0.5f);

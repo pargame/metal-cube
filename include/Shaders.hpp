@@ -17,7 +17,7 @@ struct FrameUniforms {
 static_assert(std::is_standard_layout_v<FrameUniforms>, "FrameUniforms must maintain standard layout for GPU constant buffer mapping.");
 
 // Metal Shading Language (MSL) 소스 코드
-// 정점 셰이더(vertexMain)는 기준 좌표계의 단계별 전이와 차원 축소(1~4단계)를 수행하고,
+// 정점 셰이더(vertexMain)는 기준 좌표계의 단계별 전이와 사영 변환(1~4단계)을 수행하고,
 // 프래그먼트 셰이더(fragmentMain)는 확정된 가시 표면의 광학적 상호작용 해석(7단계)을 수행합니다.
 inline constexpr const char* kShaderSource = R"(
     #include <metal_stdlib>
@@ -44,7 +44,7 @@ inline constexpr const char* kShaderSource = R"(
         float4   lightDirWorld;
     };
 
-    // [1단계 -> 2단계 -> 3단계 -> 4단계: 기준 좌표계 상대성 사슬 및 차원 축소]
+    // [1단계 -> 2단계 -> 3단계 -> 4단계: 기준 좌표계 상대성 사슬 및 사영 변환]
     vertex VertexOutput vertexMain(VertexInput in [[stage_in]],
                                    constant FrameUniforms& uniforms [[buffer(1)]]) {
         VertexOutput out;
@@ -86,7 +86,7 @@ inline constexpr const char* kShaderSource = R"(
         float3 ambientRadiance = float3(0.25);
         float3 linearRadiance = in.albedo * (ambientRadiance + diffuseFactor * 0.75);
 
-        // 반환된 선형 색상 값은 별도 HDR 톤매핑 없이 LDR [0, 1] 클램프 후
+        // 반환된 선형 색상 값은 별도 HDR 톤매핑 없이 Unorm 저장 시 하드웨어 포화(클램프)와 함께
         // 8단계(sRGB 렌더 타겟 하드웨어)에서 비선형 감마 인코딩 및 8비트 양자화됩니다.
         return float4(linearRadiance, 1.0);
     }

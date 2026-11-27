@@ -12,7 +12,7 @@ A hardware-accelerated 3D rotating cube application written in **pure C++ (`meta
   - `include/Math3D.hpp`: 4x4 homogeneous coordinate matrix operations for reference frame transformations (Change of Basis)
   - `include/World.hpp`: **[Stages 1–2]** Spatial ontology definitions and frame-independent temporal state transitions (`WorldState`)
   - `include/Observer.hpp`: **[Stages 3–4]** Observer (camera) view transformation and perspective projection (`Observer`)
-  - `include/Shaders.hpp`: **[Stages 4 & 7]** Step-by-step coordinate space transitions (`Local` → `World` → `View` → `Clip`) in the vertex shader and optical interaction evaluation in the fragment shader
+  - `include/Shaders.hpp`: **[Stages 2–4 & 7]** Step-by-step coordinate space transitions (`Local` → `World` → `View` → `Clip`) in the vertex shader and optical interaction evaluation in the fragment shader
   - `include/Renderer.hpp`: **[Stage 0 & Stages 4–9]** Pipeline pre-compilation & resource contracts, back-face culling, spatial discretization, occlusion resolution (Z-buffer), perceptual mapping (sRGB), CPU↔GPU in-flight frame isolation (semaphore), and display presentation synchronization (`CubeRenderer`)
   - `metal_rotating_cube.cpp`: **[Stage 0 & Orchestration]** OS window/surface/event-loop contracts and runtime frame loop orchestration (`AppDelegate`, `ViewDelegate`)
 - **One-Click Debugging in VSCode**: Instant execution via <kbd>F5</kbd> using `tasks.json` (Ninja build) and `launch.json` (CodeLLDB).

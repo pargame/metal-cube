@@ -3,7 +3,7 @@
 #include <numbers>
 #include "Math3D.hpp"
 
-// [3단계: 관찰자의 정립과 시점 변환] & [4단계: 차원 축소(원근 사영) 규격 정의]
+// [3단계: 관찰자의 정립과 시점 변환] & [4단계: 원근 사영 변환 규격 정의]
 // 객관적인 가상 세계 공간(World Space)을 특정 위치와 시야각으로 관측하는 주체(카메라/센서)를 정의합니다.
 class Observer {
 public:
@@ -19,8 +19,8 @@ public:
         return Matrix4x4::translation(0.0f, 0.0f, _distanceZ);
     }
 
-    // [4단계: 관찰자 공간(View Space, 3D) -> 정규화 투영 공간(Clip/NDC Space, 2D + Depth) 차원 축소]
-    // 관찰자의 시야 절두체(Frustum) 내부 3차원 공간을 2차원 평면과 깊이 범위([0, 1])로 압축합니다.
+    // [4단계: 관찰자 공간(View Space) -> 동차 절단 공간(Clip Space) 원근 사영 변환]
+    // 관찰자의 시야 절두체(Frustum) 내부를 동차 절단 공간으로 사영하며, 원근 분할(/w) 후 Metal NDC(xy ∈ [-1, 1], z ∈ [0, 1])가 됩니다.
     Matrix4x4 computeProjectionMatrix(float aspectRatio) const noexcept {
         float safeAspect = (aspectRatio > 0.0f) ? aspectRatio : 1.0f;
         return Matrix4x4::perspective(_fovYRadians, safeAspect, _nearZ, _farZ);

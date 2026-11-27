@@ -16,14 +16,14 @@
 #include "Observer.hpp"
 #include "Shaders.hpp"
 
-// [4단계 ~ 9단계: 차원 축소, 이산화, 폐색 해결, 광학 해석, 인지적 매핑, 시간 격리 및 물리 신호 표출]
+// [0단계 & 4~9단계: 실행 환경 계약, 사영 변환, 이산화, 폐색 해결, 광학 해석, 인지적 매핑, 시간 격리 및 물리 신호 표출]
 // 가상 세계 상태(WorldState)와 관찰자(Observer) 정보를 입력받아
 // GPU 하드웨어 파이프라인을 통해 최종 화면의 물리적 광신호로 변환하는 렌더러 클래스입니다.
 class CubeRenderer {
 public:
     // [9단계: CPU↔GPU 프레임 자원 격리 (In-flight Frame Isolation)]
     // CPU가 다음 프레임의 Uniform 상태를 기록하는 동안 GPU가 이전 프레임을 동시에 소비할 수 있도록
-    // 독립된 Uniform 버퍼 슬롯을 운용합니다. (디스플레이 출력용 드로어블 풀인 Triple Buffering과는 별개 계층)
+    // 독립된 Uniform 버퍼 슬롯을 운용합니다. (GPU↔Display 출력 버퍼 격리인 CAMetalLayer 드로어블 풀(기본 3개)과는 별개 계층)
     static constexpr std::size_t kMaxFramesInFlight = 3;
 
     explicit CubeRenderer(MTL::Device* pDevice)
@@ -58,7 +58,7 @@ public:
         _currentFrameIndex = (_currentFrameIndex + 1) % kMaxFramesInFlight;
 
         // [2단계 ~ 4단계: 기준 좌표계 전이 행렬 스냅샷 구성]
-        // 현재 시점의 세계 배치(Model), 관찰자 시점(View), 차원 축소(Projection) 행렬을 각각 산출하여
+        // 현재 시점의 세계 배치(Model), 관찰자 시점(View), 사영 변환(Projection) 행렬을 각각 산출하여
         // 이번 프레임 전용 Uniform 버퍼 슬롯에 값 의미론(Value Semantics) 대입으로 기록합니다.
         CGSize drawableSize = pView->drawableSize();
         float aspectRatio = (drawableSize.height > 0.0f)
