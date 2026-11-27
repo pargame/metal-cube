@@ -27,12 +27,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Install Vulkan SDK
-        uses: humbletim/setup-vulkan-sdk@v1.2.1
-        with:
-          vulkan-query-version: latest
-          vulkan-components: Vulkan-Headers, Vulkan-Loader, Glslang
-          vulkan-use-cache: true
+      - name: Install LunarG Prebuilt Vulkan SDK
+        shell: pwsh
+        run: |
+          $ver = (Invoke-RestMethod "https://vulkan.lunarg.com/sdk/latest/windows.txt").Trim()
+          Write-Host "Installing LunarG Vulkan SDK $ver"
+          $installer = "$env:TEMP\VulkanSDK.exe"
+          Invoke-WebRequest "https://sdk.lunarg.com/sdk/download/$ver/windows/vulkansdk-windows-X64-$ver.exe" -OutFile $installer
+          Start-Process -FilePath $installer -ArgumentList "--root", "C:\VulkanSDK\$ver", "--accept-licenses", "--default-answer", "--confirm-command", "install" -Wait -NoNewWindow
+          "VULKAN_SDK=C:\VulkanSDK\$ver" | Out-File -FilePath $env:GITHUB_ENV -Append
+          "C:\VulkanSDK\$ver\Bin" | Out-File -FilePath $env:GITHUB_PATH -Append
 
       - name: Configure & Build (DX12 + Vulkan)
         run: |
