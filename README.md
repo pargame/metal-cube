@@ -1,46 +1,51 @@
 > 🌐 **Language:** **English** | [한국어](README_KO.md)
 
-# Metal Cube (3D Rotating Cube)
+# Metal Cube (Semantic 3D Cube — Metal · Vulkan · Direct3D 12)
 
-A hardware-accelerated 3D rotating cube application written in **pure C++ (`metal-cpp`)** for Apple Silicon Macs.
+A cross-platform 3D rotating cube project that shares a single **API-agnostic semantic core (Stages 1–4)** across three native backends — **Metal, Vulkan, and Direct3D 12** (Stage 0 & Stages 4–9) — for 1:1 architectural comparison.
 
-## Features
-- **Modern C++26 + MSL (Metal Shading Language)**:
-  - Direct integration with Apple's official `metal-cpp` ([English Guide](metal-cpp/README.md) | [한국어 가이드](metal-cpp/README_KO.md)) and `metal-cpp-extensions` without Objective-C bridges.
-  - Idiomatic C++20/23/26 features: multidimensional subscript `operator[col, row]`, full RAII via `NS::SharedPtr` & `std::unique_ptr` (zero manual `release`/`delete`), `std::counting_semaphore`, `constexpr std::array`, `<numbers>`, `<print>`, C++26 `= delete("reason")`, and placeholder `_`.
-- **0–9 Stage Semantic Architecture Modularization**: Modularized 1:1 according to the bootstrap lifecycle (Stage 0) and runtime pipeline (Stages 1–9) in the [3D Space Rendering Semantic Design Document](docs/3d-rendering-semantics.md).
-  - `include/Math3D.hpp`: 4x4 homogeneous coordinate matrix operations for reference frame transformations (Change of Basis)
-  - `include/World.hpp`: **[Stages 1–2]** Spatial ontology definitions and frame-independent temporal state transitions (`WorldState`)
-  - `include/Observer.hpp`: **[Stages 3–4]** Observer (camera) view transformation and perspective projection (`Observer`)
-  - `include/Shaders.hpp`: **[Stages 2–4 & 7]** Step-by-step coordinate space transitions (`Local` → `World` → `View` → `Clip`) in the vertex shader and optical interaction evaluation in the fragment shader
-  - `include/Renderer.hpp`: **[Stage 0 & Stages 4–9]** Pipeline pre-compilation & resource contracts, back-face culling, spatial discretization, occlusion resolution (Z-buffer), perceptual mapping (sRGB), CPU↔GPU in-flight frame isolation (semaphore), and display presentation synchronization (`CubeRenderer`)
-  - `metal_rotating_cube.cpp`: **[Stage 0 & Orchestration]** OS window/surface/event-loop contracts and runtime frame loop orchestration (`AppDelegate`, `ViewDelegate`)
-- **One-Click Debugging in VSCode**: Instant execution via <kbd>F5</kbd> using `tasks.json` (Ninja build) and `launch.json` (CodeLLDB).
+## Architecture Overview
+Modularized 1:1 according to the bootstrap lifecycle (Stage 0) and runtime pipeline (Stages 1–9) in the [3D Space Rendering Semantic Design Document](docs/3d-rendering-semantics.md).
+
+- **Shared Core (`include/core/` — API-agnostic Stages 1–4 & Stage 0.5 Data ABI)**:
+  - `include/core/Math3D.hpp`: 4x4 homogeneous coordinate matrix operations (supports Metal/DX12 and Vulkan NDC via `flipY`)
+  - `include/core/World.hpp`: **[Stages 1–2]** Spatial ontology (`Vertex`, `kCubeVertices`, `kCubeIndices`) and frame-independent temporal transitions (`WorldState`)
+  - `include/core/Observer.hpp`: **[Stages 3–4]** Observer view transformation and perspective projection (`Observer`)
+  - `include/core/FrameUniforms.hpp`: **[Stage 0.5]** 208-byte CPU↔GPU uniform ABI shared by all backends
+- **Three Pure Native Backends (`backends/` — zero bridges or external windowing libraries)**:
+  - `backends/metal/` (**macOS Native**): `AppKit` + `MTK::View` + `metal-cpp` + MSL (`MetalShaders.hpp`, `MetalRenderer.hpp`, `main_metal.cpp`)
+  - `backends/vulkan/` (**Windows Win32 · Linux X11 Native**): GLSL 450 → SPIR-V + explicit swapchain/resize renegotiation/staging/synchronization (`VulkanRenderer.hpp`, `main_vulkan_win32.cpp`, `main_vulkan_x11.cpp`)
+  - `backends/dx12/` (**Windows Native**): `Win32` + `DXGI` Flip-Model (sRGB RTV) + `D3D12` + `D3DCompile` HLSL 5.0 (`Dx12Shaders.hpp`, `Dx12Renderer.hpp`, `main_dx12.cpp`)
+- **Multi-OS Build CI**: [.github/workflows/ci.yml](.github/workflows/ci.yml) verifies native builds on macOS (Metal), Windows (DX12 + Vulkan), and Linux (Vulkan).
 
 ## Build and Run
 
-### Requirements
-- macOS (Apple Silicon recommended)
-- CMake 3.20+ & Ninja
-- Clang / LLVM
+CMake automatically detects the host OS and enables only the native backend targets for that platform.
 
-### Terminal Build
+### macOS (Apple Silicon — Metal Native)
 ```bash
-# Debug build
 cmake -B build/debug -DCMAKE_BUILD_TYPE=Debug -G Ninja
 ninja -C build/debug
-./build/debug/metal_rotating_cube
 
-# Release build
-cmake -B build/release -DCMAKE_BUILD_TYPE=Release -G Ninja
-ninja -C build/release
-./build/release/metal_rotating_cube
+./build/debug/metal_rotating_cube
 ```
 
-### Run in VSCode
-1. Open the `metal-cube` folder in VSCode: `code ~/repos/metal-cube`
-2. Press <kbd>Cmd</kbd> + <kbd>Shift</kbd> + <kbd>B</kbd> to build (select Debug or Release)
-3. Press <kbd>F5</kbd> to launch the 3D cube window immediately.
+### Windows (Direct3D 12 + Vulkan)
+```powershell
+cmake -B build -DCMAKE_BUILD_TYPE=Release
+cmake --build build --config Release
+
+.\build\Release\dx12_rotating_cube.exe
+.\build\Release\vulkan_rotating_cube.exe
+```
+
+### Linux (Vulkan + X11)
+```bash
+sudo apt-get install -y ninja-build libvulkan-dev glslang-tools libx11-dev
+cmake -B build/release -DCMAKE_BUILD_TYPE=Release -G Ninja
+ninja -C build/release
+./build/release/vulkan_rotating_cube
+```
 
 ## License
 

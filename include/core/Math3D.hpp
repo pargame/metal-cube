@@ -7,12 +7,10 @@
 
 // 기준 좌표계 전이(Change of Basis)를 수행하는 4x4 동차 좌표계(Homogeneous Coordinates) 행렬
 // 3차원 공간(R^3)의 회전(선형 변환)과 이동(아핀 변환)을 단일 행렬 곱셈 사슬로 처리하기 위해
-// 4차원 동차 좌표([x, y, z, 1]^T)를 사용합니다. (Metal Column-Major 메모리 레이아웃 준수)
+// 4차원 동차 좌표([x, y, z, 1]^T)를 사용합니다. (Column-Major 메모리 레이아웃 준수)
 struct Matrix4x4 {
     std::array<float, 16> m{}; // Column-Major: m[col * 4 + row]
 
-    // [C++23/26 다중 첨자 연산자 (Multidimensional Subscript Operator)]
-    // 1차원 오프셋(col * 4 + row) 수동 계산 없이 mat[col, row] 형태로 직관적 인덱싱을 제공합니다.
     constexpr float& operator[](std::size_t col, std::size_t row) noexcept {
         return m[col * 4 + row];
     }
@@ -61,12 +59,13 @@ struct Matrix4x4 {
     }
 
     // [4단계: 사영 변환] 3차원 관찰자 공간(View Space)의 시야 절두체를 동차 절단 공간(Clip Space)으로 사영하며,
-    // 원근 분할(/w) 후 Metal 규격의 정규화 투영 공간(NDC: X, Y in [-1, 1], Z in [0, 1])가 되는 원근 투영 행렬
-    static Matrix4x4 perspective(float fovyRad, float aspect, float nearZ, float farZ) noexcept {
+    // 원근 분할(/w) 후 Z in [0, 1] 규격의 NDC(Metal / Vulkan / Direct3D 12)가 되는 원근 투영 행렬.
+    // flipY=true: Vulkan처럼 NDC Y축이 아래 방향(+Y down)인 API를 위해 Y 스케일 부호를 반전합니다.
+    static Matrix4x4 perspective(float fovyRad, float aspect, float nearZ, float farZ, bool flipY = false) noexcept {
         Matrix4x4 r{};
         float tanHalfFov = std::tan(fovyRad * 0.5f);
         r[0, 0] = 1.0f / (aspect * tanHalfFov);
-        r[1, 1] = 1.0f / tanHalfFov;
+        r[1, 1] = (flipY ? -1.0f : 1.0f) / tanHalfFov;
         r[2, 2] = farZ / (nearZ - farZ);
         r[2, 3] = -1.0f;
         r[3, 2] = (farZ * nearZ) / (nearZ - farZ);
@@ -88,6 +87,6 @@ struct Matrix4x4 {
     }
 };
 
-// GPU(MSL float4x4)와 직접 메모리를 공유하므로 표준 메모리 레이아웃(Standard Layout) 및 64바이트 크기를 컴파일 타임 검증
+// GPU(MSL/GLSL/HLSL float4x4)와 직접 메모리를 공유하므로 표준 메모리 레이아웃 및 64바이트 크기를 컴파일 타임 검증
 static_assert(std::is_standard_layout_v<Matrix4x4>, "Matrix4x4 must have a standard layout for GPU ABI compatibility.");
 static_assert(sizeof(Matrix4x4) == 64, "Matrix4x4 must be exactly 64 bytes (16 floats).");

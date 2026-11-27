@@ -1,0 +1,56 @@
+name: Multi-OS Native Build CI (Metal · Direct3D 12 · Vulkan)
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-macos:
+    name: macOS (Metal Native)
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Ninja
+        run: brew install ninja
+
+      - name: Configure & Build (Metal)
+        run: |
+          cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+          ninja -C build metal_rotating_cube
+
+  build-windows:
+    name: Windows (Direct3D 12 + Vulkan Native)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Vulkan SDK
+        uses: humbletim/setup-vulkan-sdk@v1.2.1
+        with:
+          vulkan-version: latest
+          vulkan-components: Vulkan-Headers, Vulkan-Loader, Glslang
+          vulkan-use-cache: true
+
+      - name: Configure & Build (DX12 + Vulkan)
+        run: |
+          cmake -B build -DCMAKE_BUILD_TYPE=Release
+          cmake --build build --config Release --target dx12_rotating_cube vulkan_rotating_cube
+
+  build-linux:
+    name: Linux (Vulkan + X11 Native)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Vulkan & X11 dev packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ninja-build libvulkan-dev glslang-tools libx11-dev
+
+      - name: Configure & Build (Vulkan)
+        run: |
+          cmake -B build -G Ninja -DCMAKE_BUILD_TYPE=Release
+          ninja -C build vulkan_rotating_cube
