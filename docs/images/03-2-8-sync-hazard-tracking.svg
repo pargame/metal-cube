@@ -1,0 +1,134 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1376 768" width="1376" height="768">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F6F8FC"/>
+      <stop offset="100%" stop-color="#EEF2F8"/>
+    </linearGradient>
+    <filter id="cardShadow" x="-4%" y="-6%" width="108%" height="114%">
+      <feDropShadow dx="0" dy="6" stdDeviation="10" flood-color="#0F172A" flood-opacity="0.06"/>
+    </filter>
+    <marker id="arrBlue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M 0 1.5 L 9 5 L 0 8.5 z" fill="#2563EB"/>
+    </marker>
+    <marker id="arrAmber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M 0 1.5 L 9 5 L 0 8.5 z" fill="#D97706"/>
+    </marker>
+    <style>
+      .font { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", Arial, sans-serif; }
+      .title { font-size: 40px; font-weight: 700; fill: #0F172A; letter-spacing: -0.6px; }
+      .panel-title { font-size: 24px; font-weight: 700; fill: #0F172A; }
+      .pill-amber { font-size: 15px; font-weight: 700; fill: #B45309; }
+      .pill-blue { font-size: 15px; font-weight: 700; fill: #1D4ED8; }
+      .pill-cyan { font-size: 15px; font-weight: 700; fill: #0369A1; }
+      .box-title { font-size: 20px; font-weight: 700; fill: #0F172A; }
+      .box-sub { font-size: 15px; font-weight: 500; fill: #475569; }
+      .white-title { font-size: 19px; font-weight: 700; fill: #FFFFFF; }
+      .white-sub { font-size: 14px; font-weight: 500; fill: #E0F2FE; }
+      .api-title { font-size: 17px; font-weight: 700; fill: #0F172A; }
+      .api-sub { font-size: 14px; font-weight: 600; fill: #475569; }
+    </style>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1376" height="768" fill="url(#bgGrad)"/>
+
+  <!-- Title -->
+  <text x="68" y="88" class="font title">0.8. Synchronization &amp; Hazard Tracking</text>
+
+  <!-- LEFT PANEL: CPU <-> GPU Sync -->
+  <g filter="url(#cardShadow)">
+    <rect x="68" y="132" width="600" height="572" rx="20" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="2"/>
+  </g>
+  <rect x="102" y="160" width="236" height="34" rx="17" fill="#FEF3C7" stroke="#F59E0B" stroke-width="1.5"/>
+  <text x="220" y="182" text-anchor="middle" class="font pill-amber">Pre-Allocated Primitives</text>
+  <text x="102" y="228" class="font panel-title">CPU ↔ GPU Synchronization</text>
+
+  <!-- CPU Box -->
+  <rect x="102" y="258" width="532" height="96" rx="14" fill="#EFF6FF" stroke="#3B82F6" stroke-width="2"/>
+  <g transform="translate(126, 286)" stroke="#2563EB" stroke-width="2.2" fill="none" stroke-linecap="round">
+    <rect x="6" y="6" width="24" height="24" rx="4" fill="#FFFFFF"/>
+    <rect x="12" y="12" width="12" height="12" rx="2" fill="#2563EB" stroke="none"/>
+  </g>
+  <text x="180" y="301" class="font box-title">CPU · Recording Frame N+1</text>
+  <text x="180" y="328" class="font box-sub">Waits before overwriting shared frame buffers</text>
+
+  <!-- Gate / Fence & Semaphore -->
+  <line x1="250" y1="354" x2="250" y2="394" stroke="#D97706" stroke-width="2.8" marker-end="url(#arrAmber)"/>
+  <line x1="486" y1="496" x2="486" y2="456" stroke="#2563EB" stroke-width="2.8" marker-end="url(#arrBlue)"/>
+
+  <rect x="102" y="400" width="532" height="72" rx="14" fill="#FFFBEB" stroke="#F59E0B" stroke-width="2.2"/>
+  <!-- Gate icon -->
+  <g transform="translate(126, 418)" stroke="#B45309" stroke-width="2.4" fill="none" stroke-linecap="round">
+    <rect x="4" y="8" width="32" height="14" rx="3" fill="#FDE68A"/>
+    <line x1="12" y1="8" x2="18" y2="22"/><line x1="22" y1="8" x2="28" y2="22"/>
+    <line x1="8" y1="22" x2="8" y2="34"/><line x1="32" y1="22" x2="32" y2="34"/>
+  </g>
+  <text x="182" y="432" class="font box-title">Fence &amp; Semaphore Gate</text>
+  <text x="182" y="455" class="font pill-amber">Wait Completion  ·  Prevent Race Conditions</text>
+
+  <!-- GPU Box -->
+  <rect x="102" y="504" width="532" height="96" rx="14" fill="#ECFEFF" stroke="#0EA5E9" stroke-width="2"/>
+  <g transform="translate(126, 532)" stroke="#0284C7" stroke-width="2.2" fill="none">
+    <rect x="3" y="6" width="32" height="22" rx="4" fill="#FFFFFF"/>
+    <rect x="9" y="11" width="5" height="12" rx="1" fill="#0EA5E9" stroke="none"/>
+    <rect x="17" y="11" width="5" height="12" rx="1" fill="#0EA5E9" stroke="none"/>
+    <rect x="25" y="11" width="5" height="12" rx="1" fill="#0EA5E9" stroke="none"/>
+  </g>
+  <text x="180" y="547" class="font box-title">GPU · Executing Frame N</text>
+  <text x="180" y="574" class="font box-sub">Signals fence upon finishing active frame slot</text>
+
+  <!-- Left Footer -->
+  <rect x="102" y="624" width="532" height="48" rx="12" fill="#F1F5F9"/>
+  <text x="368" y="653" text-anchor="middle" class="font box-sub">Controls async completion &amp; safe buffer reuse across frames</text>
+
+  <!-- RIGHT PANEL: GPU Internal Hazard Tracking -->
+  <g filter="url(#cardShadow)">
+    <rect x="708" y="132" width="600" height="572" rx="20" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="2"/>
+  </g>
+  <rect x="742" y="160" width="268" height="34" rx="17" fill="#EFF6FF" stroke="#3B82F6" stroke-width="1.5"/>
+  <text x="876" y="182" text-anchor="middle" class="font pill-blue">Per-Frame Command Recording</text>
+  <text x="742" y="228" class="font panel-title">GPU Internal Hazard Tracking</text>
+
+  <!-- Horizontal GPU Stage Flow -->
+  <rect x="742" y="268" width="166" height="126" rx="14" fill="#2563EB"/>
+  <text x="825" y="324" text-anchor="middle" class="font white-title">Write Stage</text>
+  <text x="825" y="350" text-anchor="middle" class="font white-sub">Render Target</text>
+
+  <line x1="908" y1="331" x2="942" y2="331" stroke="#2563EB" stroke-width="3" marker-end="url(#arrBlue)"/>
+
+  <!-- Memory Barrier Shield -->
+  <rect x="954" y="256" width="108" height="150" rx="16" fill="#EFF6FF" stroke="#2563EB" stroke-width="2.5"/>
+  <g transform="translate(988, 274)" fill="#2563EB">
+    <path d="M20 2 L36 9 V21 C36 31 29 39 20 42 C11 39 4 31 4 21 V9 Z" fill="#DBEAFE" stroke="#2563EB" stroke-width="2.4"/>
+    <path d="M14 21 L18.5 25.5 L27 16.5" fill="none" stroke="#2563EB" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  <text x="1008" y="344" text-anchor="middle" class="font pill-blue">Memory</text>
+  <text x="1008" y="364" text-anchor="middle" class="font pill-blue">Barrier</text>
+  <text x="1008" y="388" text-anchor="middle" class="font" font-size="12" font-weight="600" fill="#475569">Layout Sync</text>
+
+  <line x1="1062" y1="331" x2="1096" y2="331" stroke="#2563EB" stroke-width="3" marker-end="url(#arrBlue)"/>
+
+  <rect x="1108" y="268" width="166" height="126" rx="14" fill="#0EA5E9"/>
+  <text x="1191" y="324" text-anchor="middle" class="font white-title">Read Stage</text>
+  <text x="1191" y="350" text-anchor="middle" class="font white-sub">Sample / Present</text>
+
+  <!-- API Design Boundary Split -->
+  <text x="742" y="454" class="font box-title">API Design Boundary</text>
+  <text x="742" y="478" class="font box-sub">Who tracks resource read/write hazards?</text>
+
+  <!-- Driver Auto-Tracked -->
+  <rect x="742" y="502" width="256" height="100" rx="14" fill="#ECFEFF" stroke="#0EA5E9" stroke-width="2"/>
+  <text x="870" y="538" text-anchor="middle" class="font api-title">Driver Auto-Tracked</text>
+  <text x="870" y="564" text-anchor="middle" class="font pill-cyan">Metal · OpenGL</text>
+  <text x="870" y="588" text-anchor="middle" class="font api-sub">Implicit Hazard Management</text>
+
+  <!-- App Explicit -->
+  <rect x="1018" y="502" width="256" height="100" rx="14" fill="#FFFBEB" stroke="#F59E0B" stroke-width="2"/>
+  <text x="1146" y="538" text-anchor="middle" class="font api-title">App Explicit</text>
+  <text x="1146" y="564" text-anchor="middle" class="font pill-amber">Vulkan · Direct3D 12</text>
+  <text x="1146" y="588" text-anchor="middle" class="font api-sub">Manual Barriers &amp; Layouts</text>
+
+  <!-- Right Footer -->
+  <rect x="742" y="624" width="532" height="48" rx="12" fill="#F1F5F9"/>
+  <text x="1008" y="653" text-anchor="middle" class="font box-sub">Guarantees memory visibility between dependent GPU stages</text>
+</svg>

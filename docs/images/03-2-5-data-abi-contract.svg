@@ -1,0 +1,179 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1376 768" width="1376" height="768">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F6F8FC"/>
+      <stop offset="100%" stop-color="#EEF2F8"/>
+    </linearGradient>
+    <linearGradient id="abiGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#2563EB"/>
+      <stop offset="100%" stop-color="#1D4ED8"/>
+    </linearGradient>
+    <filter id="cardShadow" x="-4%" y="-6%" width="108%" height="114%">
+      <feDropShadow dx="0" dy="6" stdDeviation="10" flood-color="#0F172A" flood-opacity="0.06"/>
+    </filter>
+    <filter id="blueShadow" x="-6%" y="-6%" width="112%" height="116%">
+      <feDropShadow dx="0" dy="8" stdDeviation="14" flood-color="#1D4ED8" flood-opacity="0.20"/>
+    </filter>
+    <marker id="arrSlate" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M 0 1.5 L 9 5 L 0 8.5 z" fill="#64748B"/>
+    </marker>
+    <marker id="arrBlue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M 0 1.5 L 9 5 L 0 8.5 z" fill="#2563EB"/>
+    </marker>
+    <style>
+      .font { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", Arial, sans-serif; }
+      .mono { font-family: "SF Mono", ui-monospace, Menlo, Consolas, monospace; }
+      .title { font-size: 40px; font-weight: 700; fill: #0F172A; letter-spacing: -0.6px; }
+      .card-title { font-size: 22px; font-weight: 700; fill: #0F172A; }
+      .card-sub { font-size: 15px; font-weight: 600; fill: #475569; }
+      .box-w { font-size: 17px; font-weight: 700; fill: #FFFFFF; }
+      .box-sub { font-size: 13px; font-weight: 500; fill: #E0F2FE; }
+      .raw-txt { font-size: 15px; font-weight: 600; fill: #334155; }
+      .abi-title { font-size: 24px; font-weight: 700; fill: #FFFFFF; }
+      .abi-sub { font-size: 15px; font-weight: 500; fill: #DBEAFE; }
+      .rule-title { font-size: 17px; font-weight: 700; fill: #0F172A; }
+      .rule-sub { font-size: 14px; font-weight: 500; fill: #475569; }
+      .foot-pill { font-size: 15px; font-weight: 700; fill: #1D4ED8; }
+      .warn-pill { font-size: 14px; font-weight: 700; fill: #B45309; }
+    </style>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1376" height="768" fill="url(#bgGrad)"/>
+
+  <!-- Title -->
+  <text x="68" y="88" class="font title">0.5. CPU ↔ GPU Data ABI Contract</text>
+
+  <!-- LEFT CARD: CPU -->
+  <g filter="url(#cardShadow)">
+    <rect x="68" y="132" width="376" height="568" rx="20" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="2"/>
+  </g>
+  <!-- CPU Icon -->
+  <g transform="translate(102, 164)" stroke="#2563EB" stroke-width="2.2" fill="none" stroke-linecap="round">
+    <rect x="8" y="8" width="24" height="24" rx="4" fill="#EFF6FF"/>
+    <rect x="14" y="14" width="12" height="12" rx="2" fill="#2563EB" stroke="none"/>
+    <line x1="14" y1="2" x2="14" y2="7"/><line x1="20" y1="2" x2="20" y2="7"/><line x1="26" y1="2" x2="26" y2="7"/>
+    <line x1="14" y1="33" x2="14" y2="38"/><line x1="20" y1="33" x2="20" y2="38"/><line x1="26" y1="33" x2="26" y2="38"/>
+    <line x1="2" y1="14" x2="7" y2="14"/><line x1="2" y1="20" x2="7" y2="20"/><line x1="2" y1="26" x2="7" y2="26"/>
+    <line x1="33" y1="14" x2="38" y2="14"/><line x1="33" y1="20" x2="38" y2="20"/><line x1="33" y1="26" x2="38" y2="26"/>
+  </g>
+  <text x="156" y="182" class="font card-title">CPU · C++ Compiler</text>
+  <text x="156" y="206" class="font card-sub">Structured Source Data</text>
+
+  <!-- Source Struct Fields -->
+  <rect x="102" y="240" width="308" height="156" rx="14" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1.8"/>
+  <text x="122" y="268" class="mono card-sub">struct Vertex {</text>
+  <rect x="122" y="282" width="126" height="62" rx="10" fill="#2563EB"/>
+  <text x="185" y="310" text-anchor="middle" class="font box-w">Position</text>
+  <text x="185" y="330" text-anchor="middle" class="mono box-sub">float3</text>
+  <rect x="262" y="282" width="126" height="62" rx="10" fill="#0EA5E9"/>
+  <text x="325" y="310" text-anchor="middle" class="font box-w">Normal</text>
+  <text x="325" y="330" text-anchor="middle" class="mono box-sub">float3</text>
+  <text x="122" y="378" class="mono card-sub">};</text>
+
+  <!-- Down Arrow: Serialize -->
+  <line x1="256" y1="396" x2="256" y2="458" stroke="#64748B" stroke-width="2.8" marker-end="url(#arrSlate)"/>
+  <rect x="196" y="410" width="120" height="28" rx="14" fill="#F1F5F9"/>
+  <text x="256" y="429" text-anchor="middle" class="font card-sub">Write Bytes</text>
+
+  <!-- Anonymous Raw Bytes Box -->
+  <rect x="102" y="472" width="308" height="122" rx="14" fill="#F1F5F9" stroke="#94A3B8" stroke-width="1.8" stroke-dasharray="5,4"/>
+  <text x="256" y="502" text-anchor="middle" class="font card-sub">Raw Bytes in Memory</text>
+  <rect x="122" y="518" width="268" height="54" rx="8" fill="#E2E8F0"/>
+  <text x="256" y="551" text-anchor="middle" class="mono raw-txt">3F 80 00 00 | 00 00 | BF 00 ...</text>
+
+  <!-- Warning Pill -->
+  <rect x="102" y="618" width="308" height="48" rx="12" fill="#FEF3C7" stroke="#F59E0B" stroke-width="1.5"/>
+  <text x="256" y="647" text-anchor="middle" class="font warn-pill">Field Names Vanish in Memory</text>
+
+  <!-- Arrow Left -> Center -->
+  <line x1="444" y1="416" x2="486" y2="416" stroke="#2563EB" stroke-width="3" marker-end="url(#arrBlue)"/>
+
+  <!-- CENTER CARD: Shared ABI Blueprint -->
+  <g filter="url(#blueShadow)">
+    <rect x="498" y="132" width="380" height="568" rx="20" fill="url(#abiGrad)"/>
+  </g>
+  <text x="688" y="184" text-anchor="middle" class="font abi-title">Shared ABI Blueprint</text>
+  <text x="688" y="212" text-anchor="middle" class="font abi-sub">Strict Binary Layout Contract</text>
+
+  <!-- Rule 1: Alignment & Padding -->
+  <rect x="526" y="242" width="324" height="114" rx="14" fill="#FFFFFF"/>
+  <text x="548" y="274" class="font rule-title">1. Alignment &amp; Padding</text>
+  <text x="548" y="297" class="font rule-sub">Snap fields to 16B boundaries</text>
+  <!-- Mini visual bar -->
+  <rect x="548" y="312" width="110" height="26" rx="6" fill="#2563EB"/>
+  <rect x="664" y="312" width="38" height="26" rx="6" fill="#FEF3C7" stroke="#F59E0B" stroke-width="1.5"/>
+  <rect x="708" y="312" width="118" height="26" rx="6" fill="#0EA5E9"/>
+
+  <!-- Rule 2: Offset -->
+  <rect x="526" y="376" width="324" height="114" rx="14" fill="#FFFFFF"/>
+  <text x="548" y="408" class="font rule-title">2. Attribute Offset</text>
+  <text x="548" y="431" class="font rule-sub">Exact start byte of each field</text>
+  <g class="mono" font-size="13" font-weight="700">
+    <rect x="548" y="446" width="128" height="26" rx="6" fill="#EFF6FF" stroke="#3B82F6"/>
+    <text x="612" y="464" text-anchor="middle" fill="#1D4ED8">Pos @ 0B</text>
+    <rect x="688" y="446" width="138" height="26" rx="6" fill="#ECFEFF" stroke="#0EA5E9"/>
+    <text x="757" y="464" text-anchor="middle" fill="#0369A1">Norm @ 16B</text>
+  </g>
+
+  <!-- Rule 3: Stride -->
+  <rect x="526" y="510" width="324" height="106" rx="14" fill="#FFFFFF"/>
+  <text x="548" y="542" class="font rule-title">3. Vertex Stride</text>
+  <text x="548" y="565" class="font rule-sub">Byte step from Vertex N to N+1</text>
+  <line x1="552" y1="590" x2="822" y2="590" stroke="#2563EB" stroke-width="2.5"/>
+  <line x1="552" y1="582" x2="552" y2="598" stroke="#2563EB" stroke-width="2.5"/>
+  <line x1="822" y1="582" x2="822" y2="598" stroke="#2563EB" stroke-width="2.5"/>
+  <rect x="646" y="577" width="82" height="24" rx="12" fill="#EFF6FF"/>
+  <text x="687" y="594" text-anchor="middle" class="mono" font-size="13" font-weight="700" fill="#1D4ED8">32 Bytes</text>
+
+  <!-- Center Bottom Badge -->
+  <rect x="526" y="636" width="324" height="42" rx="21" fill="#EFF6FF"/>
+  <text x="688" y="662" text-anchor="middle" class="font foot-pill">Identical Rules on Both Sides</text>
+
+  <!-- Arrow Center -> Right -->
+  <line x1="878" y1="416" x2="920" y2="416" stroke="#2563EB" stroke-width="3" marker-end="url(#arrBlue)"/>
+
+  <!-- RIGHT CARD: GPU -->
+  <g filter="url(#cardShadow)">
+    <rect x="932" y="132" width="376" height="568" rx="20" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="2"/>
+  </g>
+  <!-- GPU Icon -->
+  <g transform="translate(966, 164)" stroke="#0284C7" stroke-width="2.2" fill="none">
+    <rect x="3" y="7" width="34" height="24" rx="4" fill="#ECFEFF"/>
+    <rect x="9" y="13" width="5" height="12" rx="1" fill="#0EA5E9" stroke="none"/>
+    <rect x="17" y="13" width="5" height="12" rx="1" fill="#0EA5E9" stroke="none"/>
+    <rect x="25" y="13" width="5" height="12" rx="1" fill="#0EA5E9" stroke="none"/>
+    <line x1="10" y1="31" x2="10" y2="36" stroke="#1E293B"/>
+    <line x1="20" y1="31" x2="20" y2="36" stroke="#1E293B"/>
+    <line x1="30" y1="31" x2="30" y2="36" stroke="#1E293B"/>
+  </g>
+  <text x="1020" y="182" class="font card-title">GPU · Shader Input</text>
+  <text x="1020" y="206" class="font card-sub">Unpacked Vertex Attributes</text>
+
+  <!-- Unpacked Attributes -->
+  <rect x="966" y="240" width="308" height="132" rx="14" fill="#F8FAFC" stroke="#BAE6FD" stroke-width="1.8"/>
+  <rect x="986" y="262" width="126" height="86" rx="10" fill="#2563EB"/>
+  <text x="1049" y="299" text-anchor="middle" class="font box-w">Attr 0</text>
+  <text x="1049" y="322" text-anchor="middle" class="mono box-sub">Position</text>
+  <rect x="1126" y="262" width="126" height="86" rx="10" fill="#0EA5E9"/>
+  <text x="1189" y="299" text-anchor="middle" class="font box-w">Attr 1</text>
+  <text x="1189" y="322" text-anchor="middle" class="mono box-sub">Normal</text>
+
+  <!-- Down Arrow -> Cube -->
+  <line x1="1120" y1="372" x2="1120" y2="432" stroke="#2563EB" stroke-width="2.8" marker-end="url(#arrBlue)"/>
+
+  <!-- Clean Isometric Cube Result -->
+  <rect x="966" y="446" width="308" height="148" rx="14" fill="#F0F9FF" stroke="#BAE6FD" stroke-width="1.8"/>
+  <g transform="translate(1068, 466)">
+    <!-- Top face -->
+    <polygon points="52,6 98,30 52,54 6,30" fill="#38BDF8" stroke="#0F172A" stroke-width="2.2" stroke-linejoin="round"/>
+    <!-- Left face -->
+    <polygon points="6,30 52,54 52,104 6,80" fill="#2563EB" stroke="#0F172A" stroke-width="2.2" stroke-linejoin="round"/>
+    <!-- Right face -->
+    <polygon points="98,30 52,54 52,104 98,80" fill="#0EA5E9" stroke="#0F172A" stroke-width="2.2" stroke-linejoin="round"/>
+  </g>
+
+  <!-- Success Pill -->
+  <rect x="966" y="618" width="308" height="48" rx="12" fill="#EFF6FF" stroke="#3B82F6" stroke-width="1.5"/>
+  <text x="1120" y="647" text-anchor="middle" class="font foot-pill">Exact Meaning Reconstructed</text>
+</svg>
