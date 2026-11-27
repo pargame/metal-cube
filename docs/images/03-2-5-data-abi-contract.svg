@@ -1,0 +1,157 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1376 768" width="1376" height="768">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F6F8FC"/>
+      <stop offset="100%" stop-color="#EEF2F8"/>
+    </linearGradient>
+    <linearGradient id="blueSeg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#3B82F6"/>
+      <stop offset="100%" stop-color="#2563EB"/>
+    </linearGradient>
+    <linearGradient id="cyanSeg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#22D3EE"/>
+      <stop offset="100%" stop-color="#0EA5E9"/>
+    </linearGradient>
+    <pattern id="amberHatch" width="12" height="12" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+      <rect width="12" height="12" fill="#FEF3C7"/>
+      <line x1="0" y1="0" x2="0" y2="12" stroke="#F59E0B" stroke-width="3" stroke-opacity="0.32"/>
+    </pattern>
+    <filter id="cardShadow" x="-4%" y="-6%" width="108%" height="116%">
+      <feDropShadow dx="0" dy="6" stdDeviation="10" flood-color="#0F172A" flood-opacity="0.06"/>
+    </filter>
+    <filter id="pillShadow" x="-8%" y="-15%" width="116%" height="140%">
+      <feDropShadow dx="0" dy="3" stdDeviation="5" flood-color="#1E3A8A" flood-opacity="0.10"/>
+    </filter>
+    <style>
+      .font { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", Arial, sans-serif; }
+      .mono { font-family: "SF Mono", ui-monospace, Menlo, Consolas, monospace; }
+      .title { font-size: 42px; font-weight: 700; fill: #0F172A; letter-spacing: -0.6px; }
+      .card-title { font-size: 24px; font-weight: 700; fill: #0F172A; }
+      .card-sub { font-size: 17px; font-weight: 500; fill: #475569; }
+      .seg-title { font-size: 21px; font-weight: 700; fill: #FFFFFF; }
+      .seg-sub { font-size: 16px; font-weight: 500; fill: #E0F2FE; }
+      .pad-title { font-size: 19px; font-weight: 700; fill: #B45309; }
+      .pad-sub { font-size: 15px; font-weight: 600; fill: #D97706; }
+      .offset-lbl { font-size: 16px; font-weight: 600; fill: #475569; }
+      .badge-txt { font-size: 18px; font-weight: 700; fill: #1D4ED8; }
+      .footer-txt { font-size: 17px; font-weight: 600; fill: #334155; }
+    </style>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1376" height="768" fill="url(#bgGrad)"/>
+
+  <!-- Title -->
+  <text x="68" y="88" class="font title">0.5. CPU ↔ GPU Data ABI Contract</text>
+
+  <!-- Vertical Dashed Alignment Guides (x = 128, 548, 688, 1108, 1248 => total width 1120px = 35px/byte) -->
+  <g stroke="#94A3B8" stroke-width="2" stroke-dasharray="6,6" opacity="0.75">
+    <line x1="128" y1="305" x2="128" y2="515"/>
+    <line x1="548" y1="305" x2="548" y2="515"/>
+    <line x1="688" y1="305" x2="688" y2="515"/>
+    <line x1="1108" y1="305" x2="1108" y2="515"/>
+    <line x1="1248" y1="305" x2="1248" y2="515"/>
+  </g>
+
+  <!-- UPPER CARD: CPU Side -->
+  <g filter="url(#cardShadow)">
+    <rect x="68" y="132" width="1240" height="222" rx="18" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="2"/>
+  </g>
+
+  <!-- CPU Icon -->
+  <g transform="translate(104, 154)" stroke="#1E293B" stroke-width="2.2" fill="none" stroke-linecap="round">
+    <rect x="8" y="8" width="24" height="24" rx="4" fill="#EFF6FF" stroke="#2563EB"/>
+    <rect x="14" y="14" width="12" height="12" rx="2" fill="#2563EB" stroke="none"/>
+    <line x1="14" y1="2" x2="14" y2="7"/><line x1="20" y1="2" x2="20" y2="7"/><line x1="26" y1="2" x2="26" y2="7"/>
+    <line x1="14" y1="33" x2="14" y2="38"/><line x1="20" y1="33" x2="20" y2="38"/><line x1="26" y1="33" x2="26" y2="38"/>
+    <line x1="2" y1="14" x2="7" y2="14"/><line x1="2" y1="20" x2="7" y2="20"/><line x1="2" y1="26" x2="7" y2="26"/>
+    <line x1="33" y1="14" x2="38" y2="14"/><line x1="33" y1="20" x2="38" y2="20"/><line x1="33" y1="26" x2="38" y2="26"/>
+  </g>
+  <text x="158" y="182" class="font card-title">CPU Side · C++ Struct Memory</text>
+  <text x="1248" y="180" text-anchor="end" class="mono card-sub">alignas(16) struct Vertex</text>
+
+  <!-- CPU Byte Bar (y=212, h=86, x=128..1248) -->
+  <!-- Position: 12B = 420px (128..548) -->
+  <rect x="128" y="212" width="420" height="86" rx="10" fill="url(#blueSeg)"/>
+  <text x="338" y="249" text-anchor="middle" class="font seg-title">Position</text>
+  <text x="338" y="276" text-anchor="middle" class="mono seg-sub">float3 · 12 Bytes</text>
+
+  <!-- Pad 1: 4B = 140px (548..688) -->
+  <rect x="552" y="212" width="132" height="86" rx="10" fill="url(#amberHatch)" stroke="#F59E0B" stroke-width="2"/>
+  <text x="618" y="249" text-anchor="middle" class="font pad-title">Pad</text>
+  <text x="618" y="274" text-anchor="middle" class="mono pad-sub">4B</text>
+
+  <!-- Normal: 12B = 420px (688..1108) -->
+  <rect x="692" y="212" width="412" height="86" rx="10" fill="url(#cyanSeg)"/>
+  <text x="898" y="249" text-anchor="middle" class="font seg-title">Normal</text>
+  <text x="898" y="276" text-anchor="middle" class="mono seg-sub">float3 · 12 Bytes</text>
+
+  <!-- Pad 2: 4B = 140px (1108..1248) -->
+  <rect x="1112" y="212" width="136" height="86" rx="10" fill="url(#amberHatch)" stroke="#F59E0B" stroke-width="2"/>
+  <text x="1180" y="249" text-anchor="middle" class="font pad-title">Pad</text>
+  <text x="1180" y="274" text-anchor="middle" class="mono pad-sub">4B</text>
+
+  <!-- Offset Ticks -->
+  <g class="mono offset-lbl" text-anchor="middle">
+    <text x="128" y="330">0B</text>
+    <text x="548" y="330">12B</text>
+    <text x="688" y="330">16B</text>
+    <text x="1108" y="330">28B</text>
+    <text x="1248" y="330">32B</text>
+  </g>
+
+  <!-- CENTER BRIDGE PILL -->
+  <g filter="url(#pillShadow)">
+    <rect x="418" y="388" width="540" height="48" rx="24" fill="#EFF6FF" stroke="#3B82F6" stroke-width="2"/>
+  </g>
+  <!-- Checkmark circle inside pill -->
+  <g transform="translate(442, 400)">
+    <circle cx="12" cy="12" r="11" fill="#2563EB"/>
+    <path d="M7.5 12.2 L10.6 15.3 L16.8 9" fill="none" stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  <text x="702" y="418" text-anchor="middle" class="font badge-txt">Exact Binary Match · Alignment · Offset · Stride</text>
+
+  <!-- LOWER CARD: GPU Side -->
+  <g filter="url(#cardShadow)">
+    <rect x="68" y="468" width="1240" height="236" rx="18" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="2"/>
+  </g>
+
+  <!-- GPU Icon -->
+  <g transform="translate(104, 490)" stroke="#0EA5E9" stroke-width="2" fill="none">
+    <rect x="3" y="7" width="34" height="24" rx="4" fill="#ECFEFF" stroke="#0284C7" stroke-width="2.2"/>
+    <rect x="9" y="13" width="5" height="12" rx="1" fill="#0EA5E9" stroke="none"/>
+    <rect x="17" y="13" width="5" height="12" rx="1" fill="#0EA5E9" stroke="none"/>
+    <rect x="25" y="13" width="5" height="12" rx="1" fill="#0EA5E9" stroke="none"/>
+    <line x1="10" y1="31" x2="10" y2="36" stroke="#1E293B" stroke-width="2.2"/>
+    <line x1="17" y1="31" x2="17" y2="36" stroke="#1E293B" stroke-width="2.2"/>
+    <line x1="24" y1="31" x2="24" y2="36" stroke="#1E293B" stroke-width="2.2"/>
+    <line x1="30" y1="31" x2="30" y2="36" stroke="#1E293B" stroke-width="2.2"/>
+  </g>
+  <text x="158" y="518" class="font card-title">GPU Side · Shader Vertex Input</text>
+  <text x="1248" y="516" text-anchor="end" class="mono card-sub">VertexDescriptor · Stride = 32B</text>
+
+  <!-- GPU Byte Bar (y=546, h=86, x=128..1248) -->
+  <!-- Attr 0: Position -->
+  <rect x="128" y="546" width="420" height="86" rx="10" fill="url(#blueSeg)"/>
+  <text x="338" y="583" text-anchor="middle" class="font seg-title">Attr 0 · Position</text>
+  <text x="338" y="610" text-anchor="middle" class="mono seg-sub">Offset 0B · float3</text>
+
+  <!-- Pad 1 -->
+  <rect x="552" y="546" width="132" height="86" rx="10" fill="url(#amberHatch)" stroke="#F59E0B" stroke-width="2"/>
+  <text x="618" y="583" text-anchor="middle" class="font pad-title">Skip</text>
+  <text x="618" y="608" text-anchor="middle" class="mono pad-sub">4B</text>
+
+  <!-- Attr 1: Normal -->
+  <rect x="692" y="546" width="412" height="86" rx="10" fill="url(#cyanSeg)"/>
+  <text x="898" y="583" text-anchor="middle" class="font seg-title">Attr 1 · Normal</text>
+  <text x="898" y="610" text-anchor="middle" class="mono seg-sub">Offset 16B · float3</text>
+
+  <!-- Pad 2 -->
+  <rect x="1112" y="546" width="136" height="86" rx="10" fill="url(#amberHatch)" stroke="#F59E0B" stroke-width="2"/>
+  <text x="1180" y="583" text-anchor="middle" class="font pad-title">Skip</text>
+  <text x="1180" y="608" text-anchor="middle" class="mono pad-sub">4B</text>
+
+  <!-- Bottom Summary Bar -->
+  <rect x="318" y="652" width="740" height="36" rx="18" fill="#F1F5F9"/>
+  <text x="688" y="676" text-anchor="middle" class="font footer-txt">16-Byte Aligned Layout  ·  Stride = 32 Bytes  ·  Zero Misread Across Compilers</text>
+</svg>
