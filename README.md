@@ -17,6 +17,7 @@ Modularized 1:1 according to the bootstrap lifecycle (Stage 0) and runtime pipel
   - `backends/vulkan/` (**Windows Win32 · Linux X11 Native**): GLSL 450 → SPIR-V + explicit swapchain/resize renegotiation/staging/synchronization (`VulkanRenderer.hpp`, `main_vulkan_win32.cpp`, `main_vulkan_x11.cpp`)
   - `backends/dx12/` (**Windows Native**): `Win32` + `DXGI` Flip-Model (sRGB RTV) + `D3D12` + `D3DCompile` HLSL 5.0 (`Dx12Shaders.hpp`, `Dx12Renderer.hpp`, `main_dx12.cpp`)
 - **Multi-OS Build CI**: [.github/workflows/ci.yml](.github/workflows/ci.yml) verifies native builds on macOS (Metal), Windows (DX12 + Vulkan), and Linux (Vulkan).
+- **Intentional Omissions**: Because this sample renders a single cube, **Stage 4 Frustum Culling** and **Stage 5 MSAA** are intentionally omitted across all three backends.
 
 ## Build and Run
 

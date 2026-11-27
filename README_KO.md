@@ -17,6 +17,7 @@
   - `backends/vulkan/` (**Windows Win32 · Linux X11 네이티브**): GLSL 450 → SPIR-V + 명시적 스왑체인/리사이즈 재협상/스테이징/동기화 (`VulkanRenderer.hpp`, `main_vulkan_win32.cpp`, `main_vulkan_x11.cpp`)
   - `backends/dx12/` (**Windows 네이티브**): `Win32` + `DXGI` Flip-Model(sRGB RTV) + `D3D12` + `D3DCompile` HLSL 5.0 (`Dx12Shaders.hpp`, `Dx12Renderer.hpp`, `main_dx12.cpp`)
 - **멀티OS 자동 빌드 CI**: [.github/workflows/ci.yml](.github/workflows/ci.yml)에서 macOS(Metal), Windows(DX12 + Vulkan), Linux(Vulkan) 네이티브 빌드를 자동 검증합니다.
+- **의도적 생략 범위**: 단일 정육면체 예제이므로 4단계의 **시야 절두체 선별(Frustum Culling)**과 5단계의 **다중 표본화(MSAA)**는 세 백엔드 모두 의도적으로 생략했습니다.
 
 ## 빌드 및 실행
 

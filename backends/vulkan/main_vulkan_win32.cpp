@@ -38,6 +38,7 @@ std::filesystem::path resolveShaderDirectory() {
     return std::filesystem::current_path() / "shaders";
 }
 
+// [0.1단계 & 3.2 Renegotiation/Teardown: Win32 OS 창 이벤트(리사이즈·최소화·종료) 처리]
 LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
     auto* state = reinterpret_cast<Win32AppState*>(GetWindowLongPtrW(hwnd, GWLP_USERDATA));
 
@@ -72,6 +73,7 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam) {
 } // namespace
 
 int main() {
+    // [0.1단계: Win32 OS 창 클래스 등록 및 창 생성]
     HINSTANCE hInstance = GetModuleHandleW(nullptr);
     constexpr const wchar_t* kClassName = L"SemanticCubeVulkanWindowClass";
 
@@ -123,6 +125,7 @@ int main() {
     std::uint32_t width = static_cast<std::uint32_t>(clientRect.right - clientRect.left);
     std::uint32_t height = static_cast<std::uint32_t>(clientRect.bottom - clientRect.top);
 
+    // [0.4단계: Win32 HWND와 Vulkan 디스플레이 표면(VkSurfaceKHR) 결합 팩토리]
     std::vector<const char*> instanceExtensions = {
         VK_KHR_SURFACE_EXTENSION_NAME,
         VK_KHR_WIN32_SURFACE_EXTENSION_NAME
@@ -142,6 +145,7 @@ int main() {
     };
 
     try {
+        // [0단계 Bootstrap: Vulkan 렌더러 및 정적 실행 환경 계약 초기화]
         state.renderer = std::make_unique<VulkanCubeRenderer>(
             instanceExtensions,
             createSurface,
@@ -150,9 +154,11 @@ int main() {
             resolveShaderDirectory()
         );
 
+        // [1단계 & 3단계: 가상 세계 상태 및 관찰자 초기화]
         WorldState world;
         Observer observer;
 
+        // [0.1단계 & 2~9단계: Win32 이벤트 펌핑 및 런타임 프레임 루프]
         MSG msg{};
         while (state.running) {
             while (PeekMessageW(&msg, nullptr, 0, 0, PM_REMOVE)) {
@@ -172,10 +178,13 @@ int main() {
                 continue;
             }
 
+            // [2단계: 경과 시간 기반 시간 전이 및 개체 상태 갱신]
             world.updateSimulation();
+            // [3~9단계: 시점·사영·이산화·폐색·광학·동기화·표출 실행]
             state.renderer->renderFrame(world, observer);
         }
 
+        // [3.2 Teardown: 창 파괴 전 Vulkan 자원 및 표면 계약 선행 해제]
         state.renderer.reset();
     } catch (const std::exception& e) {
         std::fprintf(stderr, "Vulkan error: %s\n", e.what());

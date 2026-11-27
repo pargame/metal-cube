@@ -33,6 +33,7 @@ std::filesystem::path resolveShaderDirectory() {
 } // namespace
 
 int main() {
+    // [0.1단계: X11 디스플레이 연결, 창 생성 및 이벤트 마스크·종료 프로토콜 확보]
     Display* display = XOpenDisplay(nullptr);
     if (!display) {
         std::fprintf(stderr, "Failed to open X11 display.\n");
@@ -64,6 +65,7 @@ int main() {
     XMapWindow(display, window);
     XFlush(display);
 
+    // [0.4단계: X11 Window와 Vulkan 디스플레이 표면(VkSurfaceKHR) 결합 팩토리]
     std::vector<const char*> instanceExtensions = {
         VK_KHR_SURFACE_EXTENSION_NAME,
         VK_KHR_XLIB_SURFACE_EXTENSION_NAME
@@ -84,6 +86,7 @@ int main() {
 
     int exitCode = 0;
     try {
+        // [0단계 Bootstrap: Vulkan 렌더러 및 정적 실행 환경 계약 초기화]
         auto renderer = std::make_unique<VulkanCubeRenderer>(
             instanceExtensions,
             createSurface,
@@ -92,10 +95,12 @@ int main() {
             resolveShaderDirectory()
         );
 
+        // [1단계 & 3단계: 가상 세계 상태 및 관찰자 초기화]
         WorldState world;
         Observer observer;
         bool running = true;
 
+        // [0.1단계 & 2~9단계: X11 이벤트 폴링 및 런타임 프레임 루프]
         while (running) {
             while (XPending(display) > 0) {
                 XEvent event{};
@@ -107,6 +112,7 @@ int main() {
                     }
                     break;
                 case ConfigureNotify: {
+                    // [3.2 Renegotiation: X11 창 크기 변경 감지 및 스왑체인 재협상 요청]
                     auto newW = static_cast<std::uint32_t>(event.xconfigure.width);
                     auto newH = static_cast<std::uint32_t>(event.xconfigure.height);
                     if (newW != width || newH != height) {
@@ -125,16 +131,20 @@ int main() {
                 break;
             }
 
+            // [2단계: 경과 시간 기반 시간 전이 및 개체 상태 갱신]
             world.updateSimulation();
+            // [3~9단계: 시점·사영·이산화·폐색·광학·동기화·표출 실행]
             renderer->renderFrame(world, observer);
         }
 
+        // [3.2 Teardown: X11 창 파괴 전 Vulkan 자원 및 표면 계약 선행 해제]
         renderer.reset();
     } catch (const std::exception& e) {
         std::fprintf(stderr, "Vulkan error: %s\n", e.what());
         exitCode = 1;
     }
 
+    // [3.2 Teardown: OS 창 및 X11 디스플레이 연결 해제]
     XDestroyWindow(display, window);
     XCloseDisplay(display);
     return exitCode;

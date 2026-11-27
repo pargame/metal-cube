@@ -53,8 +53,8 @@ public:
         createRenderTargetViews();
         createDepthStencilBuffer();
         createRootSignatureAndPipeline();
-        createGeometryAndUniformBuffers();
         createSyncObjects();
+        createGeometryAndUniformBuffers();
     }
 
     // [Teardown: GPU 완료 대기 후 매핑·이벤트·ComPtr 자원 역순 해제]
@@ -568,9 +568,15 @@ private:
         throwIfFailed(_device->CreateGraphicsPipelineState(&psoDesc, IID_PPV_ARGS(&_pipelineState)), "CreateGraphicsPipelineState");
     }
 
-    void createUploadBuffer(UINT64 byteSize, Microsoft::WRL::ComPtr<ID3D12Resource>& outBuffer) {
+    void createBuffer(
+        UINT64 byteSize,
+        D3D12_HEAP_TYPE heapType,
+        D3D12_RESOURCE_STATES initialState,
+        Microsoft::WRL::ComPtr<ID3D12Resource>& outBuffer,
+        const char* context
+    ) {
         D3D12_HEAP_PROPERTIES heapProps{};
-        heapProps.Type = D3D12_HEAP_TYPE_UPLOAD;
+        heapProps.Type = heapType;
         heapProps.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
         heapProps.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN;
 
@@ -592,33 +598,103 @@ private:
                 &heapProps,
                 D3D12_HEAP_FLAG_NONE,
                 &bufferDesc,
-                D3D12_RESOURCE_STATE_GENERIC_READ,
+                initialState,
                 nullptr,
                 IID_PPV_ARGS(&outBuffer)
             ),
+            context
+        );
+    }
+
+    void createUploadBuffer(UINT64 byteSize, Microsoft::WRL::ComPtr<ID3D12Resource>& outBuffer) {
+        createBuffer(
+            byteSize,
+            D3D12_HEAP_TYPE_UPLOAD,
+            D3D12_RESOURCE_STATE_GENERIC_READ,
+            outBuffer,
             "CreateCommittedResource (UploadBuffer)"
         );
     }
 
-    // [0.6단계: 메모리 토폴로지 정렬 및 정점·인덱스·프레임 상수 자원 실체화]
+    void createDefaultBuffer(UINT64 byteSize, Microsoft::WRL::ComPtr<ID3D12Resource>& outBuffer) {
+        createBuffer(
+            byteSize,
+            D3D12_HEAP_TYPE_DEFAULT,
+            D3D12_RESOURCE_STATE_COMMON,
+            outBuffer,
+            "CreateCommittedResource (DefaultBuffer)"
+        );
+    }
+
+    // [0.6단계: 메모리 토폴로지 정렬 및 정점·인덱스(DEFAULT + Staging)·프레임 상수(UPLOAD) 자원 실체화]
     void createGeometryAndUniformBuffers() {
         const D3D12_RANGE readRange{0, 0};
 
-        createUploadBuffer(sizeof(kCubeVertices), _vertexBuffer);
+        createDefaultBuffer(static_cast<UINT64>(sizeof(kCubeVertices)), _vertexBuffer);
+        createDefaultBuffer(static_cast<UINT64>(sizeof(kCubeIndices)), _indexBuffer);
+
+        Microsoft::WRL::ComPtr<ID3D12Resource> vertexStagingBuffer;
+        createUploadBuffer(static_cast<UINT64>(sizeof(kCubeVertices)), vertexStagingBuffer);
         void* mappedVertices = nullptr;
-        throwIfFailed(_vertexBuffer->Map(0, &readRange, &mappedVertices), "VertexBuffer::Map");
+        throwIfFailed(vertexStagingBuffer->Map(0, &readRange, &mappedVertices), "VertexStagingBuffer::Map");
         std::memcpy(mappedVertices, kCubeVertices.data(), sizeof(kCubeVertices));
-        _vertexBuffer->Unmap(0, nullptr);
+        vertexStagingBuffer->Unmap(0, nullptr);
+
+        Microsoft::WRL::ComPtr<ID3D12Resource> indexStagingBuffer;
+        createUploadBuffer(static_cast<UINT64>(sizeof(kCubeIndices)), indexStagingBuffer);
+        void* mappedIndices = nullptr;
+        throwIfFailed(indexStagingBuffer->Map(0, &readRange, &mappedIndices), "IndexStagingBuffer::Map");
+        std::memcpy(mappedIndices, kCubeIndices.data(), sizeof(kCubeIndices));
+        indexStagingBuffer->Unmap(0, nullptr);
+
+        auto& allocator = _commandAllocators[0];
+        throwIfFailed(allocator->Reset(), "ID3D12CommandAllocator::Reset (staging)");
+        throwIfFailed(_commandList->Reset(allocator.Get(), nullptr), "ID3D12GraphicsCommandList::Reset (staging)");
+
+        _commandList->CopyBufferRegion(
+            _vertexBuffer.Get(),
+            0,
+            vertexStagingBuffer.Get(),
+            0,
+            static_cast<UINT64>(sizeof(kCubeVertices))
+        );
+        _commandList->CopyBufferRegion(
+            _indexBuffer.Get(),
+            0,
+            indexStagingBuffer.Get(),
+            0,
+            static_cast<UINT64>(sizeof(kCubeIndices))
+        );
+
+        std::array<D3D12_RESOURCE_BARRIER, 2> barriers{};
+        barriers[0].Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+        barriers[0].Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+        barriers[0].Transition.pResource = _vertexBuffer.Get();
+        barriers[0].Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+        barriers[0].Transition.StateBefore = D3D12_RESOURCE_STATE_COPY_DEST;
+        barriers[0].Transition.StateAfter = D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER;
+
+        barriers[1].Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+        barriers[1].Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+        barriers[1].Transition.pResource = _indexBuffer.Get();
+        barriers[1].Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
+        barriers[1].Transition.StateBefore = D3D12_RESOURCE_STATE_COPY_DEST;
+        barriers[1].Transition.StateAfter = D3D12_RESOURCE_STATE_INDEX_BUFFER;
+
+        _commandList->ResourceBarrier(static_cast<UINT>(barriers.size()), barriers.data());
+
+        throwIfFailed(_commandList->Close(), "ID3D12GraphicsCommandList::Close (staging)");
+
+        ID3D12CommandList* commandLists[] = {_commandList.Get()};
+        _commandQueue->ExecuteCommandLists(1, commandLists);
+        flushGpu();
+
+        vertexStagingBuffer.Reset();
+        indexStagingBuffer.Reset();
 
         _vertexBufferView.BufferLocation = _vertexBuffer->GetGPUVirtualAddress();
         _vertexBufferView.StrideInBytes = static_cast<UINT>(sizeof(Vertex));
         _vertexBufferView.SizeInBytes = static_cast<UINT>(sizeof(kCubeVertices));
-
-        createUploadBuffer(sizeof(kCubeIndices), _indexBuffer);
-        void* mappedIndices = nullptr;
-        throwIfFailed(_indexBuffer->Map(0, &readRange, &mappedIndices), "IndexBuffer::Map");
-        std::memcpy(mappedIndices, kCubeIndices.data(), sizeof(kCubeIndices));
-        _indexBuffer->Unmap(0, nullptr);
 
         _indexBufferView.BufferLocation = _indexBuffer->GetGPUVirtualAddress();
         _indexBufferView.Format = DXGI_FORMAT_R16_UINT;

@@ -33,7 +33,13 @@ public:
         buildOcclusionResolver();
     }
 
-    ~MetalCubeRenderer() = default;
+    // [3.2 Teardown: 진행 중인 모든 GPU 명령 완료 대기 후 역순 해제]
+    // 완료 핸들러가 this를 캡처하므로 객체 파괴 전 kMaxFramesInFlight 슬롯을 모두 회수합니다.
+    ~MetalCubeRenderer() {
+        for (std::size_t i = 0; i < kMaxFramesInFlight; ++i) {
+            _inFlightSemaphore.acquire();
+        }
+    }
 
     MetalCubeRenderer(const MetalCubeRenderer&) = delete("GPU 파이프라인 및 버퍼 리소스를 독점 소유하는 객체이므로 복사할 수 없습니다.");
     MetalCubeRenderer& operator=(const MetalCubeRenderer&) = delete("GPU 파이프라인 및 버퍼 리소스를 독점 소유하는 객체이므로 복사 대입할 수 없습니다.");

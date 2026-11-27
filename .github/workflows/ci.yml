@@ -6,6 +6,13 @@ on:
   pull_request:
     branches: [ main ]
 
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build-macos:
     name: macOS (Metal Native)
@@ -24,19 +31,42 @@ jobs:
   build-windows:
     name: Windows (Direct3D 12 + Vulkan Native)
     runs-on: windows-latest
+    env:
+      VULKAN_SDK_VERSION: "1.4.363.1"
     steps:
       - uses: actions/checkout@v4
 
+      - name: Cache LunarG Vulkan SDK
+        id: vulkan-cache
+        uses: actions/cache@v4
+        with:
+          path: C:\VulkanSDK\${{ env.VULKAN_SDK_VERSION }}
+          key: vulkan-sdk-win-${{ env.VULKAN_SDK_VERSION }}
+
       - name: Install LunarG Prebuilt Vulkan SDK
+        if: steps.vulkan-cache.outputs.cache-hit != 'true'
         shell: pwsh
         run: |
-          $ver = (Invoke-RestMethod "https://vulkan.lunarg.com/sdk/latest/windows.txt").Trim()
+          $ver = $env:VULKAN_SDK_VERSION
           Write-Host "Installing LunarG Vulkan SDK $ver"
           $installer = "$env:TEMP\VulkanSDK.exe"
           Invoke-WebRequest "https://sdk.lunarg.com/sdk/download/$ver/windows/vulkansdk-windows-X64-$ver.exe" -OutFile $installer
-          Start-Process -FilePath $installer -ArgumentList "--root", "C:\VulkanSDK\$ver", "--accept-licenses", "--default-answer", "--confirm-command", "install" -Wait -NoNewWindow
-          "VULKAN_SDK=C:\VulkanSDK\$ver" | Out-File -FilePath $env:GITHUB_ENV -Append
-          "C:\VulkanSDK\$ver\Bin" | Out-File -FilePath $env:GITHUB_PATH -Append
+          $proc = Start-Process -FilePath $installer -ArgumentList "--root", "C:\VulkanSDK\$ver", "--accept-licenses", "--default-answer", "--confirm-command", "install" -Wait -NoNewWindow -PassThru
+          if ($proc.ExitCode -ne 0) {
+            Write-Error "Vulkan SDK installer failed with exit code $($proc.ExitCode)"
+            exit $proc.ExitCode
+          }
+
+      - name: Export & Verify Vulkan SDK Environment
+        shell: pwsh
+        run: |
+          $sdk = "C:\VulkanSDK\$env:VULKAN_SDK_VERSION"
+          if (-not (Test-Path "$sdk\Include\vulkan\vulkan.h")) {
+            Write-Error "Vulkan SDK verification failed: $sdk\Include\vulkan\vulkan.h not found"
+            exit 1
+          }
+          "VULKAN_SDK=$sdk" | Out-File -FilePath $env:GITHUB_ENV -Append
+          "$sdk\Bin" | Out-File -FilePath $env:GITHUB_PATH -Append
 
       - name: Configure & Build (DX12 + Vulkan)
         run: |

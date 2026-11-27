@@ -22,12 +22,16 @@
 #include "core/Observer.hpp"
 #include "core/World.hpp"
 
+// [0단계 & 4~9단계: Vulkan 백엔드 렌더러]
 class VulkanCubeRenderer {
 public:
+    // [9단계: CPU↔GPU 프레임 자원 격리 (In-flight Frame Isolation)]
+    // GPU↔Display 출력 버퍼 격리인 스왑체인 이미지 풀과는 별개 계층
     static constexpr std::size_t kMaxFramesInFlight = 2;
 
     using SurfaceFactory = std::function<VkSurfaceKHR(VkInstance)>;
 
+    // [0단계 Bootstrap: 실행 시 1회 정적 환경 계약(0.2~0.8) 일괄 체결]
     VulkanCubeRenderer(
         const std::vector<const char*>& platformInstanceExtensions,
         SurfaceFactory createSurface,
@@ -65,6 +69,7 @@ public:
         }
     }
 
+    // [3.2 Teardown: GPU 작업 완료 대기 후 모든 자원과 표면 계약을 역순 해제]
     ~VulkanCubeRenderer() {
         cleanup();
     }
@@ -74,17 +79,20 @@ public:
     VulkanCubeRenderer(VulkanCubeRenderer&&) = delete;
     VulkanCubeRenderer& operator=(VulkanCubeRenderer&&) = delete;
 
+    // [3.2 Renegotiation: OS 창 크기 변경 통지 수신]
     void notifyFramebufferResized(std::uint32_t width, std::uint32_t height) noexcept {
         _pendingWidth = width;
         _pendingHeight = height;
         _framebufferResized = true;
     }
 
+    // [2~9단계: 런타임 프레임 루프 — 동기화, 변환 행렬 갱신, 명령 기록·제출, 출력 표출]
     void renderFrame(const WorldState& world, const Observer& observer) {
         if (_pendingWidth == 0 || _pendingHeight == 0) {
             return;
         }
 
+        // [3.2 Renegotiation: 창 크기 변경에 따른 스왑체인·깊이 버퍼 재협상]
         if (_framebufferResized) {
             _framebufferResized = false;
             recreateSwapchain();
@@ -93,10 +101,12 @@ public:
             }
         }
 
+        // [9단계: CPU↔GPU 프레임 자원 격리 — 현재 슬롯의 이전 GPU 작업 완료 대기]
         FrameSync& frame = _frames[_currentFrame];
         checkVk(vkWaitForFences(_device, 1, &frame.inFlightFence, VK_TRUE, UINT64_MAX),
                 "vkWaitForFences failed");
 
+        // [9단계: GPU↔Display 출력 버퍼 격리 — 다음 스왑체인 이미지 획득]
         std::uint32_t imageIndex = 0;
         VkResult acquireResult = vkAcquireNextImageKHR(
             _device,
@@ -120,18 +130,24 @@ public:
                                       static_cast<float>(_swapchainExtent.height)
                                 : 1.0f;
 
+        // [2~4단계 & 0.5단계: 세계·시점·사영 행렬 및 광원 방향을 CPU↔GPU ABI 버퍼에 기록]
         FrameUniforms uniforms{};
         uniforms.modelMatrix = world.computeModelMatrix();
         uniforms.viewMatrix = observer.computeViewMatrix();
+        // [4단계: Vulkan의 +Y down NDC 규약 보정을 위해 flipY=true 적용]
+        // 코어 큐브 인덱스는 반시계(CCW)이나 flipY로 화면 공간 감기 방향이 반전되므로
+        // 파이프라인에서 VK_FRONT_FACE_CLOCKWISE를 앞면으로 지정합니다.
         uniforms.projectionMatrix = observer.computeProjectionMatrix(aspectRatio, true);
         uniforms.lightDirWorld = world.lightDirectionWorld();
 
         std::memcpy(frame.uniformMapped, &uniforms, sizeof(FrameUniforms));
 
+        // [0.3단계 & 4~8단계: 현재 슬롯의 명령 버퍼 초기화 및 렌더링 명령 기록]
         checkVk(vkResetFences(_device, 1, &frame.inFlightFence), "vkResetFences failed");
         checkVk(vkResetCommandBuffer(frame.commandBuffer, 0), "vkResetCommandBuffer failed");
         recordCommandBuffer(frame.commandBuffer, frame.descriptorSet, imageIndex);
 
+        // [0.3단계 & 9단계: 비동기 그래픽스 큐 제출 및 획득/완료 세마포어·펜스 동기화]
         VkSemaphore waitSemaphores[] = { frame.imageAvailableSemaphore };
         VkPipelineStageFlags waitStages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
         VkSemaphore signalSemaphores[] = { _renderFinishedSemaphores[imageIndex] };
@@ -149,6 +165,7 @@ public:
         checkVk(vkQueueSubmit(_graphicsQueue, 1, &submitInfo, frame.inFlightFence),
                 "vkQueueSubmit failed");
 
+        // [9단계: GPU↔Display 출력 표출(Presentation) 및 표면 무효화 시 3.2 Renegotiation]
         VkSwapchainKHR swapchains[] = { _swapchain };
         VkPresentInfoKHR presentInfo{};
         presentInfo.sType = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
@@ -203,27 +220,8 @@ private:
         }
     }
 
+    // [0.2단계: Vulkan 인스턴스 생성 및 플랫폼 표면 확장 계약]
     void createInstance(const std::vector<const char*>& platformExtensions) {
-        std::uint32_t availableCount = 0;
-        vkEnumerateInstanceExtensionProperties(nullptr, &availableCount, nullptr);
-        std::vector<VkExtensionProperties> availableExts(availableCount);
-        vkEnumerateInstanceExtensionProperties(nullptr, &availableCount, availableExts.data());
-
-        auto hasExtension = [&](const char* name) {
-            return std::any_of(availableExts.begin(), availableExts.end(), [&](const VkExtensionProperties& ext) {
-                return std::strcmp(ext.extensionName, name) == 0;
-            });
-        };
-
-        std::vector<const char*> extensions = platformExtensions;
-        VkInstanceCreateFlags flags = 0;
-
-        constexpr const char* kPortabilityEnumExt = "VK_KHR_portability_enumeration";
-        if (hasExtension(kPortabilityEnumExt)) {
-            extensions.push_back(kPortabilityEnumExt);
-            flags |= VK_INSTANCE_CREATE_ENUMERATE_PORTABILITY_BIT_KHR;
-        }
-
         VkApplicationInfo appInfo{};
         appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
         appInfo.pApplicationName = "Semantic 3D Cube";
@@ -234,14 +232,14 @@ private:
 
         VkInstanceCreateInfo createInfo{};
         createInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
-        createInfo.flags = flags;
         createInfo.pApplicationInfo = &appInfo;
-        createInfo.enabledExtensionCount = static_cast<std::uint32_t>(extensions.size());
-        createInfo.ppEnabledExtensionNames = extensions.data();
+        createInfo.enabledExtensionCount = static_cast<std::uint32_t>(platformExtensions.size());
+        createInfo.ppEnabledExtensionNames = platformExtensions.data();
 
         checkVk(vkCreateInstance(&createInfo, nullptr, &_instance), "vkCreateInstance failed");
     }
 
+    // [0.3단계: 그래픽스 연산 및 화면 표출(Present) 지원 큐 패밀리 탐색]
     QueueFamilyIndices findQueueFamilies(VkPhysicalDevice device) const {
         QueueFamilyIndices indices;
 
@@ -267,25 +265,22 @@ private:
         return indices;
     }
 
-    bool checkDeviceExtensionSupport(VkPhysicalDevice device, bool& supportsPortabilitySubset) const {
+    // [0.2단계 & 0.4단계: 물리 GPU의 스왑체인 출력 확장 지원 여부 검증]
+    bool checkDeviceExtensionSupport(VkPhysicalDevice device) const {
         std::uint32_t extCount = 0;
         vkEnumerateDeviceExtensionProperties(device, nullptr, &extCount, nullptr);
         std::vector<VkExtensionProperties> available(extCount);
         vkEnumerateDeviceExtensionProperties(device, nullptr, &extCount, available.data());
 
-        bool hasSwapchain = false;
-        supportsPortabilitySubset = false;
-
         for (const auto& ext : available) {
             if (std::strcmp(ext.extensionName, VK_KHR_SWAPCHAIN_EXTENSION_NAME) == 0) {
-                hasSwapchain = true;
-            } else if (std::strcmp(ext.extensionName, "VK_KHR_portability_subset") == 0) {
-                supportsPortabilitySubset = true;
+                return true;
             }
         }
-        return hasSwapchain;
+        return false;
     }
 
+    // [0.4단계: 물리 GPU와 OS 표면 간 해상도·색 공간·표출 모드 능력 질의]
     SwapchainSupportDetails querySwapchainSupport(VkPhysicalDevice device) const {
         SwapchainSupportDetails details;
         vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, _surface, &details.capabilities);
@@ -307,6 +302,7 @@ private:
         return details;
     }
 
+    // [0.2단계: 연산 주체 탐색 — 그래픽스·표출·스왑체인 요건을 만족하는 물리 GPU 선정]
     void pickPhysicalDevice() {
         std::uint32_t deviceCount = 0;
         vkEnumeratePhysicalDevices(_instance, &deviceCount, nullptr);
@@ -318,12 +314,10 @@ private:
         vkEnumeratePhysicalDevices(_instance, &deviceCount, devices.data());
 
         VkPhysicalDevice fallbackDevice = VK_NULL_HANDLE;
-        bool fallbackPortability = false;
 
         for (VkPhysicalDevice dev : devices) {
             QueueFamilyIndices indices = findQueueFamilies(dev);
-            bool portability = false;
-            if (!indices.isComplete() || !checkDeviceExtensionSupport(dev, portability)) {
+            if (!indices.isComplete() || !checkDeviceExtensionSupport(dev)) {
                 continue;
             }
             SwapchainSupportDetails swapchainSupport = querySwapchainSupport(dev);
@@ -335,13 +329,11 @@ private:
             vkGetPhysicalDeviceProperties(dev, &props);
             if (props.deviceType == VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU) {
                 _physicalDevice = dev;
-                _enablePortabilitySubset = portability;
                 _queueFamilies = indices;
                 return;
             }
             if (fallbackDevice == VK_NULL_HANDLE) {
                 fallbackDevice = dev;
-                fallbackPortability = portability;
             }
         }
 
@@ -350,10 +342,10 @@ private:
         }
 
         _physicalDevice = fallbackDevice;
-        _enablePortabilitySubset = fallbackPortability;
         _queueFamilies = findQueueFamilies(_physicalDevice);
     }
 
+    // [0.2단계 & 0.3단계: 논리 장치(Device) 점유 및 그래픽스·표출 비동기 명령 큐 획득]
     void createLogicalDevice() {
         std::set<std::uint32_t> uniqueFamilies = {
             _queueFamilies.graphicsFamily.value(),
@@ -372,12 +364,9 @@ private:
             queueCreateInfos.push_back(queueInfo);
         }
 
-        std::vector<const char*> deviceExtensions = {
+        std::array<const char*, 1> deviceExtensions = {
             VK_KHR_SWAPCHAIN_EXTENSION_NAME
         };
-        if (_enablePortabilitySubset) {
-            deviceExtensions.push_back("VK_KHR_portability_subset");
-        }
 
         VkPhysicalDeviceFeatures deviceFeatures{};
 
@@ -396,6 +385,7 @@ private:
         vkGetDeviceQueue(_device, _queueFamilies.presentFamily.value(), 0, &_presentQueue);
     }
 
+    // [0.3단계: 비동기 명령 버퍼 할당용 커맨드 풀 개설]
     void createCommandPool() {
         VkCommandPoolCreateInfo poolInfo{};
         poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
@@ -406,6 +396,7 @@ private:
                 "vkCreateCommandPool failed");
     }
 
+    // [0.4단계 & 8단계: sRGB 비선형 색 공간 출력 포맷 선정 (저장 시 하드웨어 감마 인코딩)]
     VkSurfaceFormatKHR chooseSurfaceFormat(const std::vector<VkSurfaceFormatKHR>& formats) const {
         for (const auto& fmt : formats) {
             if (fmt.format == VK_FORMAT_B8G8R8A8_SRGB &&
@@ -422,6 +413,7 @@ private:
         return formats.front();
     }
 
+    // [0.4단계 & 9단계: 주사 동기화 정책 선정 (Mailbox 우선, 미지원 시 FIFO V-Sync)]
     VkPresentModeKHR choosePresentMode(const std::vector<VkPresentModeKHR>& modes) const {
         for (VkPresentModeKHR mode : modes) {
             if (mode == VK_PRESENT_MODE_MAILBOX_KHR) {
@@ -431,6 +423,7 @@ private:
         return VK_PRESENT_MODE_FIFO_KHR;
     }
 
+    // [0.4단계: OS 표면 제약 범위 내 출력 해상도 합의]
     VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR& caps) const {
         if (caps.currentExtent.width != std::numeric_limits<std::uint32_t>::max()) {
             return caps.currentExtent;
@@ -441,6 +434,7 @@ private:
         return actual;
     }
 
+    // [0.6단계 & 6단계: 폐색 해결용 깊이 버퍼 포맷 선정]
     VkFormat findDepthFormat() const {
         constexpr std::array<VkFormat, 3> candidates = {
             VK_FORMAT_D32_SFLOAT,
@@ -458,6 +452,7 @@ private:
         throw std::runtime_error("Failed to find a supported depth format.");
     }
 
+    // [0.6단계: 하드웨어 메모리 토폴로지에서 요구 속성에 맞는 메모리 힙 탐색]
     std::uint32_t findMemoryType(std::uint32_t typeFilter, VkMemoryPropertyFlags properties) const {
         VkPhysicalDeviceMemoryProperties memProps{};
         vkGetPhysicalDeviceMemoryProperties(_physicalDevice, &memProps);
@@ -470,6 +465,7 @@ private:
         throw std::runtime_error("Failed to find suitable Vulkan memory type.");
     }
 
+    // [0.4단계: OS 디스플레이 표면 결합 및 출력 순환(Swapchain) 구축]
     void createSwapchain() {
         SwapchainSupportDetails support = querySwapchainSupport(_physicalDevice);
         VkSurfaceFormatKHR surfaceFormat = chooseSurfaceFormat(support.formats);
@@ -521,6 +517,7 @@ private:
         _swapchainExtent = extent;
     }
 
+    // [0.4단계: 스왑체인 색상 이미지를 렌더 타겟 뷰로 래핑]
     void createSwapchainImageViews() {
         _swapchainImageViews.resize(_swapchainImages.size(), VK_NULL_HANDLE);
         for (std::size_t i = 0; i < _swapchainImages.size(); ++i) {
@@ -540,6 +537,7 @@ private:
         }
     }
 
+    // [0.6단계 & 6단계: GPU 전용(Device-local) 깊이 버퍼 자원 실체화]
     void createDepthResources() {
         _depthFormat = findDepthFormat();
 
@@ -589,6 +587,7 @@ private:
                 "vkCreateImageView (depth) failed");
     }
 
+    // [0.7단계 & 0.8단계: 렌더 패스 계약 — 색상/깊이 어태치먼트, 레이아웃 전환 및 서브패스 의존성]
     void createRenderPass() {
         VkAttachmentDescription colorAttachment{};
         colorAttachment.format = _swapchainImageFormat;
@@ -650,6 +649,7 @@ private:
                 "vkCreateRenderPass failed");
     }
 
+    // [0.5단계: CPU↔GPU 데이터 ABI — FrameUniforms 유니폼 버퍼 바인딩 규약]
     void createDescriptorSetLayout() {
         VkDescriptorSetLayoutBinding uboBinding{};
         uboBinding.binding = 0;
@@ -693,6 +693,7 @@ private:
         return module;
     }
 
+    // [0.7단계: 불변 실행 상태(PSO) 사전 컴파일 — SPIR-V 셰이더, 정점 ABI, 래스터·깊이·블렌드 상태 고정]
     void createGraphicsPipeline() {
         auto vertCode = readBinaryFile(_shaderDir / "cube.vert.spv");
         auto fragCode = readBinaryFile(_shaderDir / "cube.frag.spv");
@@ -714,6 +715,7 @@ private:
 
         VkPipelineShaderStageCreateInfo stages[] = { vertStage, fragStage };
 
+        // [0.5단계: 정점 버퍼 스트라이드 및 속성(위치·법선·색상) 오프셋 ABI]
         VkVertexInputBindingDescription bindingDesc{};
         bindingDesc.binding = 0;
         bindingDesc.stride = sizeof(Vertex);
@@ -752,6 +754,7 @@ private:
         viewportState.viewportCount = 1;
         viewportState.scissorCount = 1;
 
+        // [0.7단계: 창 크기 변경 시 파이프라인 재컴파일을 피하기 위한 동적 뷰포트·시저 분리]
         std::array<VkDynamicState, 2> dynamicStates = {
             VK_DYNAMIC_STATE_VIEWPORT,
             VK_DYNAMIC_STATE_SCISSOR
@@ -761,6 +764,9 @@ private:
         dynamicState.dynamicStateCount = static_cast<std::uint32_t>(dynamicStates.size());
         dynamicState.pDynamicStates = dynamicStates.data();
 
+        // [4~5단계 경계: 후면 제거 (Back-face Culling) 및 5단계 이산화 설정]
+        // 코어 큐브 인덱스는 반시계(CCW)이지만, Vulkan의 +Y down NDC 보정(flipY=true)으로
+        // 화면 공간 정점 감기 방향이 반전되므로 VK_FRONT_FACE_CLOCKWISE를 앞면으로 지정합니다.
         VkPipelineRasterizationStateCreateInfo rasterizer{};
         rasterizer.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
         rasterizer.depthClampEnable = VK_FALSE;
@@ -776,6 +782,7 @@ private:
         multisampling.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
         multisampling.sampleShadingEnable = VK_FALSE;
 
+        // [6단계: 폐색 해결 — 깊이 비교(LESS) 및 깊이 쓰기 활성화]
         VkPipelineDepthStencilStateCreateInfo depthStencil{};
         depthStencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
         depthStencil.depthTestEnable = VK_TRUE;
@@ -784,6 +791,7 @@ private:
         depthStencil.depthBoundsTestEnable = VK_FALSE;
         depthStencil.stencilTestEnable = VK_FALSE;
 
+        // [8단계: 불투명 단일 표면 출력 — 블렌딩 비활성화]
         VkPipelineColorBlendAttachmentState colorBlendAttachment{};
         colorBlendAttachment.colorWriteMask = VK_COLOR_COMPONENT_R_BIT |
                                               VK_COLOR_COMPONENT_G_BIT |
@@ -834,6 +842,7 @@ private:
         checkVk(pipeRes, "vkCreateGraphicsPipelines failed");
     }
 
+    // [0.4단계 & 0.6단계: 스왑체인 색상 뷰와 깊이 뷰를 결합한 프레임버퍼 생성]
     void createFramebuffers() {
         _framebuffers.resize(_swapchainImageViews.size(), VK_NULL_HANDLE);
         for (std::size_t i = 0; i < _swapchainImageViews.size(); ++i) {
@@ -916,6 +925,7 @@ private:
         vkFreeCommandBuffers(_device, _commandPool, 1, &cmd);
     }
 
+    // [0.6단계: 스테이징 버퍼를 경유한 전송으로 Device-local VRAM 자원 실체화]
     void createDeviceLocalBuffer(
         const void* data,
         VkDeviceSize size,
@@ -952,6 +962,7 @@ private:
         vkFreeMemory(_device, stagingMemory, nullptr);
     }
 
+    // [0.6단계 & 1단계: 정적 개체 기하(정점·인덱스)를 GPU 전용 메모리에 적재]
     void createGeometryBuffers() {
         createDeviceLocalBuffer(
             kCubeVertices.data(),
@@ -969,6 +980,7 @@ private:
         );
     }
 
+    // [0.6단계 & 9단계: 프레임 슬롯별 Host-visible 영구 매핑 유니폼 버퍼 할당]
     void createUniformBuffers() {
         for (auto& frame : _frames) {
             createBuffer(
@@ -983,6 +995,7 @@ private:
         }
     }
 
+    // [0.5단계 & 9단계: 프레임 슬롯별 디스크립터 셋 할당 및 유니폼 버퍼 바인딩]
     void createDescriptorPoolAndSets() {
         VkDescriptorPoolSize poolSize{};
         poolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
@@ -1031,6 +1044,7 @@ private:
         }
     }
 
+    // [0.3단계 & 9단계: 프레임 슬롯별 주 명령 버퍼(Primary Command Buffer) 할당]
     void createCommandBuffers() {
         std::array<VkCommandBuffer, kMaxFramesInFlight> buffers{};
         VkCommandBufferAllocateInfo allocInfo{};
@@ -1047,6 +1061,7 @@ private:
         }
     }
 
+    // [0.8단계 & 9단계: 스왑체인 이미지별 렌더 완료 -> 표출 대기 GPU 세마포어 생성]
     void createRenderFinishedSemaphores() {
         _renderFinishedSemaphores.resize(_swapchainImages.size(), VK_NULL_HANDLE);
         VkSemaphoreCreateInfo semInfo{};
@@ -1058,6 +1073,7 @@ private:
         }
     }
 
+    // [0.8단계: CPU↔GPU 펜스 및 GPU 내부 획득·표출 세마포어 동기화 원시체 구축]
     void createSyncObjects() {
         VkSemaphoreCreateInfo semInfo{};
         semInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
@@ -1076,6 +1092,7 @@ private:
         createRenderFinishedSemaphores();
     }
 
+    // [4~8단계: 렌더 패스 명령 기록 — 뷰포트·시저, 기하·유니폼 바인딩, 인덱스 드로우]
     void recordCommandBuffer(VkCommandBuffer cmd, VkDescriptorSet descriptorSet, std::uint32_t imageIndex) const {
         VkCommandBufferBeginInfo beginInfo{};
         beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
@@ -1098,6 +1115,7 @@ private:
 
         vkCmdBindPipeline(cmd, VK_PIPELINE_BIND_POINT_GRAPHICS, _graphicsPipeline);
 
+        // [5단계: NDC -> 화면 공간(Screen Space) 뷰포트 변환 및 시저 영역 설정]
         VkViewport viewport{};
         viewport.x = 0.0f;
         viewport.y = 0.0f;
@@ -1127,12 +1145,14 @@ private:
             nullptr
         );
 
+        // [4~8단계: 삼각형 조립 -> 투영 -> 이산화 -> 깊이 판별 -> 광학 계산 -> sRGB 출력]
         vkCmdDrawIndexed(cmd, static_cast<std::uint32_t>(kCubeIndices.size()), 1, 0, 0, 0);
 
         vkCmdEndRenderPass(cmd);
         checkVk(vkEndCommandBuffer(cmd), "vkEndCommandBuffer failed");
     }
 
+    // [3.2 Renegotiation / Teardown: 표면 종속 자원(프레임버퍼·깊이·스왑체인) 파기]
     void cleanupSwapchain() {
         for (VkFramebuffer fb : _framebuffers) {
             if (fb != VK_NULL_HANDLE) {
@@ -1175,6 +1195,7 @@ private:
         _swapchainImages.clear();
     }
 
+    // [3.2 Renegotiation: 창 크기 변경 또는 표면 무효화 시 출력 순환 및 깊이 자원 재협상]
     void recreateSwapchain() {
         if (_pendingWidth == 0 || _pendingHeight == 0) {
             _framebufferResized = true;
@@ -1197,6 +1218,7 @@ private:
         createRenderFinishedSemaphores();
     }
 
+    // [3.2 Teardown: GPU 유휴 대기 후 모든 Vulkan 자원과 OS 표면 계약 역순 해제]
     void cleanup() noexcept {
         if (_device != VK_NULL_HANDLE) {
             vkDeviceWaitIdle(_device);
@@ -1289,7 +1311,6 @@ private:
     QueueFamilyIndices _queueFamilies{};
     VkQueue _graphicsQueue = VK_NULL_HANDLE;
     VkQueue _presentQueue = VK_NULL_HANDLE;
-    bool _enablePortabilitySubset = false;
 
     VkCommandPool _commandPool = VK_NULL_HANDLE;
 
