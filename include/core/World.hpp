@@ -67,21 +67,21 @@ inline constexpr std::array<std::uint16_t, 36> kCubeIndices = {
 class WorldState {
 public:
     WorldState() noexcept
-        : _angle(0.0f),
+        : _angle(0.0),
           _lastTime(std::chrono::steady_clock::now()),
           _lightDirWorld{0.5f, 1.0f, 0.8f, 0.0f} {}
 
     void updateSimulation() noexcept {
         auto now = std::chrono::steady_clock::now();
-        float dt = std::chrono::duration<float>(now - _lastTime).count();
+        double dt = std::chrono::duration<double>(now - _lastTime).count();
         _lastTime = now;
 
-        _angle += 0.9f * dt;
+        _angle += 0.9 * dt;
     }
 
     Matrix4x4 computeModelMatrix() const noexcept {
-        Matrix4x4 rotX = Matrix4x4::rotationX(_angle * 0.8f);
-        Matrix4x4 rotY = Matrix4x4::rotationY(_angle * 1.2f);
+        Matrix4x4 rotX = Matrix4x4::rotationX(static_cast<float>(_angle * 0.8));
+        Matrix4x4 rotY = Matrix4x4::rotationY(static_cast<float>(_angle * 1.2));
         return Matrix4x4::multiply(rotY, rotX);
     }
 
@@ -90,7 +90,7 @@ public:
     }
 
 private:
-    float _angle;
+    double _angle;
     std::chrono::steady_clock::time_point _lastTime;
     std::array<float, 4> _lightDirWorld;
 };

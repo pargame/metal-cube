@@ -413,12 +413,9 @@ private:
     }
 
     // [0.4단계 & 9단계: 주사 동기화 정책 선정 (Mailbox 우선, 미지원 시 FIFO V-Sync)]
-    VkPresentModeKHR choosePresentMode(const std::vector<VkPresentModeKHR>& modes) const {
-        for (VkPresentModeKHR mode : modes) {
-            if (mode == VK_PRESENT_MODE_MAILBOX_KHR) {
-                return mode;
-            }
-        }
+    VkPresentModeKHR choosePresentMode(const std::vector<VkPresentModeKHR>& /*modes*/) const {
+        // [0.4단계 & 9단계: Metal·DX12와 동일하게 디스플레이 주사 주기(VSync) 동기화로 통일]
+        // FIFO는 Vulkan 명세상 모든 구현체가 필수 지원하는 표준 VSync 모드입니다.
         return VK_PRESENT_MODE_FIFO_KHR;
     }
 
