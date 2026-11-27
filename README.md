@@ -32,12 +32,35 @@ ninja -C build/debug
 ```
 
 ### Windows (Direct3D 12 + Vulkan)
+
+#### Prerequisites (One-Time Setup)
+1. **C++ Toolchain (Required for both DX12 & Vulkan)**
+   - **Visual Studio 2022** (or Build Tools 2022) with the **"Desktop development with C++"** workload (includes MSVC + Windows 10/11 SDK)
+   - **CMake 3.20+** (`winget install Kitware.CMake` or Visual Studio bundled CMake)
+   - *Direct3D 12 (`d3d12`, `dxgi`, `d3dcompiler`) is built into the Windows SDK — no separate graphics SDK is needed.*
+2. **LunarG Vulkan SDK (Required for Vulkan)**
+   - Install from [LunarG Vulkan SDK](https://vulkan.lunarg.com/sdk/home#windows) or run `winget install KhronosGroup.VulkanSDK`
+   - Open a **new terminal** and verify `VULKAN_SDK` is set (`echo $env:VULKAN_SDK`)
+   - Up-to-date GPU drivers (NVIDIA / AMD / Intel) with Vulkan runtime support.
+
+#### Build & Run (Both DX12 and Vulkan)
 ```powershell
+git pull
 cmake -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build --config Release
 
+# Run Direct3D 12
 .\build\Release\dx12_rotating_cube.exe
+
+# Run Vulkan (shaders/*.spv are copied next to the executable automatically)
 .\build\Release\vulkan_rotating_cube.exe
+```
+
+#### Build & Run Direct3D 12 Only (Without Vulkan SDK)
+```powershell
+cmake -B build -DCMAKE_BUILD_TYPE=Release -DENABLE_VULKAN=OFF
+cmake --build build --config Release --target dx12_rotating_cube
+.\build\Release\dx12_rotating_cube.exe
 ```
 
 ### Linux (Vulkan + X11)

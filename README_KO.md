@@ -32,12 +32,35 @@ ninja -C build/debug
 ```
 
 ### Windows (Direct3D 12 + Vulkan)
+
+#### 선제 작업 (최초 1회)
+1. **C++ 빌드 툴체인 (필수 — DX12 · Vulkan 공통)**
+   - **Visual Studio 2022** (또는 Build Tools 2022)에서 **"C++를 사용한 데스크톱 개발"** 워크로드 설치 (MSVC + Windows 10/11 SDK 포함)
+   - **CMake 3.20+** (`winget install Kitware.CMake` 또는 Visual Studio 내장 CMake)
+   - *Direct3D 12(`d3d12`, `dxgi`, `d3dcompiler`)는 Windows SDK에 기본 포함되어 별도 그래픽스 SDK가 필요 없습니다.*
+2. **LunarG Vulkan SDK (Vulkan 빌드 시 필수)**
+   - [LunarG Vulkan SDK](https://vulkan.lunarg.com/sdk/home#windows) 설치 또는 `winget install KhronosGroup.VulkanSDK`
+   - 설치 후 **새 터미널**을 열어 `VULKAN_SDK` 환경 변수가 반영되었는지 확인 (`echo $env:VULKAN_SDK`)
+   - 최신 GPU 드라이버(NVIDIA / AMD / Intel)에 Vulkan 런타임이 포함되어 있어야 실행됩니다.
+
+#### 빌드 및 실행 (DX12 + Vulkan 모두)
 ```powershell
+git pull
 cmake -B build -DCMAKE_BUILD_TYPE=Release
 cmake --build build --config Release
 
+# Direct3D 12 실행
 .\build\Release\dx12_rotating_cube.exe
+
+# Vulkan 실행 (빌드 시 shaders/*.spv가 실행 파일 옆에 자동 복사됨)
 .\build\Release\vulkan_rotating_cube.exe
+```
+
+#### Vulkan SDK 없이 Direct3D 12만 먼저 빌드·실행할 때
+```powershell
+cmake -B build -DCMAKE_BUILD_TYPE=Release -DENABLE_VULKAN=OFF
+cmake --build build --config Release --target dx12_rotating_cube
+.\build\Release\dx12_rotating_cube.exe
 ```
 
 ### Linux (Vulkan + X11)
