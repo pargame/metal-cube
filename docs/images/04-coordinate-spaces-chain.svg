@@ -1,0 +1,225 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1376 768" width="1376" height="768">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#F6F8FC"/>
+      <stop offset="100%" stop-color="#EEF2F8"/>
+    </linearGradient>
+    <filter id="cardShadow" x="-4%" y="-6%" width="108%" height="114%">
+      <feDropShadow dx="0" dy="5" stdDeviation="8" flood-color="#0F172A" flood-opacity="0.06"/>
+    </filter>
+    <marker id="arrBlue" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M 0 1.5 L 9 5 L 0 8.5 z" fill="#2563EB"/>
+    </marker>
+    <marker id="arrCyan" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M 0 1.5 L 9 5 L 0 8.5 z" fill="#0EA5E9"/>
+    </marker>
+    <style>
+      .font { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", Arial, sans-serif; }
+      .mono { font-family: "SF Mono", ui-monospace, Menlo, Consolas, monospace; }
+      .title { font-size: 38px; font-weight: 700; fill: #0F172A; letter-spacing: -0.6px; }
+      .step-num { font-size: 14px; font-weight: 700; fill: #FFFFFF; }
+      .card-title { font-size: 20px; font-weight: 700; fill: #0F172A; }
+      .card-sub { font-size: 14px; font-weight: 600; fill: #475569; }
+      .op-lbl { font-size: 13px; font-weight: 700; fill: #1D4ED8; }
+      .op-cyan { font-size: 13px; font-weight: 700; fill: #0369A1; }
+      .axis-lbl { font-size: 12px; font-weight: 700; fill: #64748B; }
+      .amber-lbl { font-size: 12px; font-weight: 700; fill: #B45309; }
+    </style>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1376" height="768" fill="url(#bgGrad)"/>
+
+  <!-- Title -->
+  <text x="68" y="82" class="font title">Relativity of Reference Frames (6-Stage Coordinate Chain)</text>
+
+  <!-- ================= ROW 1 (y=124, h=264) ================= -->
+  <!-- Card 1: Local Space (x=68, w=360) -->
+  <g filter="url(#cardShadow)">
+    <rect x="68" y="124" width="360" height="264" rx="18" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="2"/>
+  </g>
+  <circle cx="100" cy="156" r="14" fill="#2563EB"/>
+  <text x="100" y="161" text-anchor="middle" class="font step-num">1</text>
+  <text x="124" y="163" class="font card-title">Local Space</text>
+  <text x="248" y="368" text-anchor="middle" class="font card-sub">Object's Own Center (0, 0, 0)</text>
+  <!-- Visual 1: Cube centered on local axes -->
+  <g transform="translate(248, 260)">
+    <line x1="0" y1="0" x2="0" y2="-76" stroke="#94A3B8" stroke-width="2"/>
+    <line x1="0" y1="0" x2="72" y2="32" stroke="#94A3B8" stroke-width="2"/>
+    <line x1="0" y1="0" x2="-72" y2="32" stroke="#94A3B8" stroke-width="2"/>
+    <text x="6" y="-68" class="mono axis-lbl">Y</text>
+    <text x="74" y="42" class="mono axis-lbl">X</text>
+    <text x="-82" y="42" class="mono axis-lbl">Z</text>
+    <!-- Centered Cube -->
+    <polygon points="0,-42 38,-22 0,-2 -38,-22" fill="#38BDF8" stroke="#0F172A" stroke-width="2" stroke-linejoin="round"/>
+    <polygon points="-38,-22 0,-2 0,40 -38,20" fill="#2563EB" stroke="#0F172A" stroke-width="2" stroke-linejoin="round"/>
+    <polygon points="38,-22 0,-2 0,40 38,20" fill="#0EA5E9" stroke="#0F172A" stroke-width="2" stroke-linejoin="round"/>
+    <circle cx="0" cy="0" r="3.5" fill="#F59E0B"/>
+  </g>
+
+  <!-- Arrow 1 -> 2 (Model M) -->
+  <line x1="428" y1="256" x2="496" y2="256" stroke="#2563EB" stroke-width="2.8" marker-end="url(#arrBlue)"/>
+  <rect x="434" y="220" width="60" height="26" rx="13" fill="#EFF6FF" stroke="#3B82F6"/>
+  <text x="464" y="238" text-anchor="middle" class="mono op-lbl">M</text>
+
+  <!-- Card 2: World Space (x=508, w=360) -->
+  <g filter="url(#cardShadow)">
+    <rect x="508" y="124" width="360" height="264" rx="18" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="2"/>
+  </g>
+  <circle cx="540" cy="156" r="14" fill="#2563EB"/>
+  <text x="540" y="161" text-anchor="middle" class="font step-num">2</text>
+  <text x="564" y="163" class="font card-title">World Space</text>
+  <text x="688" y="368" text-anchor="middle" class="font card-sub">Shared Scene Origin &amp; Placement</text>
+  <!-- Visual 2: World grid + off-origin cube + camera -->
+  <g transform="translate(688, 266)">
+    <!-- Isometric ground grid -->
+    <polygon points="0,-46 116,10 0,66 -116,10" fill="#F8FAFC" stroke="#CBD5E1" stroke-width="1.5"/>
+    <line x1="-58" y1="-18" x2="58" y2="38" stroke="#E2E8F0" stroke-width="1.2"/>
+    <line x1="58" y1="-18" x2="-58" y2="38" stroke="#E2E8F0" stroke-width="1.2"/>
+    <!-- Global Origin Marker -->
+    <circle cx="-26" cy="16" r="4" fill="#F59E0B"/>
+    <text x="-48" y="34" class="mono axis-lbl">(0,0,0)</text>
+    <!-- Cube placed in world -->
+    <g transform="translate(36, -16) scale(0.72)">
+      <polygon points="0,-42 38,-22 0,-2 -38,-22" fill="#38BDF8" stroke="#0F172A" stroke-width="2.4" stroke-linejoin="round"/>
+      <polygon points="-38,-22 0,-2 0,40 -38,20" fill="#2563EB" stroke="#0F172A" stroke-width="2.4" stroke-linejoin="round"/>
+      <polygon points="38,-22 0,-2 0,40 38,20" fill="#0EA5E9" stroke="#0F172A" stroke-width="2.4" stroke-linejoin="round"/>
+    </g>
+    <!-- Camera icon -->
+    <g transform="translate(-88, -14)">
+      <rect x="0" y="6" width="24" height="16" rx="3" fill="#475569"/>
+      <polygon points="24,10 34,4 34,24 24,18" fill="#64748B"/>
+    </g>
+  </g>
+
+  <!-- Arrow 2 -> 3 (View V) -->
+  <line x1="868" y1="256" x2="936" y2="256" stroke="#2563EB" stroke-width="2.8" marker-end="url(#arrBlue)"/>
+  <rect x="874" y="220" width="60" height="26" rx="13" fill="#EFF6FF" stroke="#3B82F6"/>
+  <text x="904" y="238" text-anchor="middle" class="mono op-lbl">V</text>
+
+  <!-- Card 3: View Space (x=948, w=360) -->
+  <g filter="url(#cardShadow)">
+    <rect x="948" y="124" width="360" height="264" rx="18" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="2"/>
+  </g>
+  <circle cx="980" cy="156" r="14" fill="#2563EB"/>
+  <text x="980" y="161" text-anchor="middle" class="font step-num">3</text>
+  <text x="1004" y="163" class="font card-title">View Space</text>
+  <text x="1128" y="368" text-anchor="middle" class="font card-sub">Re-Centered at Observer Camera</text>
+  <!-- Visual 3: Camera at left origin looking straight right along sightline to cube -->
+  <g transform="translate(1010, 260)">
+    <!-- Sightline rays -->
+    <polygon points="28,0 220,-54 220,54" fill="#EFF6FF" stroke="#93C5FD" stroke-width="1.5" stroke-dasharray="5,4"/>
+    <line x1="28" y1="0" x2="226" y2="0" stroke="#3B82F6" stroke-width="1.8" stroke-dasharray="4,4"/>
+    <!-- Camera at origin -->
+    <rect x="-6" y="-12" width="28" height="24" rx="4" fill="#1E293B"/>
+    <polygon points="22,-6 34,-14 34,14 22,6" fill="#2563EB"/>
+    <circle cx="8" cy="0" r="3.5" fill="#F59E0B"/>
+    <!-- Cube along sightline -->
+    <g transform="translate(166, -2) scale(0.78)">
+      <polygon points="0,-42 38,-22 0,-2 -38,-22" fill="#38BDF8" stroke="#0F172A" stroke-width="2.4" stroke-linejoin="round"/>
+      <polygon points="-38,-22 0,-2 0,40 -38,20" fill="#2563EB" stroke="#0F172A" stroke-width="2.4" stroke-linejoin="round"/>
+      <polygon points="38,-22 0,-2 0,40 38,20" fill="#0EA5E9" stroke="#0F172A" stroke-width="2.4" stroke-linejoin="round"/>
+    </g>
+  </g>
+
+  <!-- ================= ROUTED CONNECTOR (Row 1 -> Row 2: Projection P) ================= -->
+  <path d="M 1128 388 L 1128 424 L 248 424 L 248 456" fill="none" stroke="#0EA5E9" stroke-width="3" stroke-linejoin="round" marker-end="url(#arrCyan)"/>
+  <rect x="614" y="409" width="148" height="30" rx="15" fill="#ECFEFF" stroke="#0EA5E9" stroke-width="1.6"/>
+  <text x="688" y="429" text-anchor="middle" class="mono op-cyan">Projection (P)</text>
+
+  <!-- ================= ROW 2 (y=466, h=264) ================= -->
+  <!-- Card 4: Clip Space (x=68, w=360) -->
+  <g filter="url(#cardShadow)">
+    <rect x="68" y="466" width="360" height="264" rx="18" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="2"/>
+  </g>
+  <circle cx="100" cy="498" r="14" fill="#0EA5E9"/>
+  <text x="100" y="503" text-anchor="middle" class="font step-num">4</text>
+  <text x="124" y="505" class="font card-title">Clip Space</text>
+  <text x="248" y="710" text-anchor="middle" class="font card-sub">Homogeneous Clipping (w ≤ 0 Safe)</text>
+  <!-- Visual 4: Frustum trapezoid with amber clip plane -->
+  <g transform="translate(114, 602)">
+    <!-- Frustum -->
+    <polygon points="48,-24 216,-58 216,58 48,24" fill="#F0F9FF" stroke="#0EA5E9" stroke-width="2"/>
+    <!-- Behind camera warning zone -->
+    <line x1="32" y1="-58" x2="32" y2="58" stroke="#F59E0B" stroke-width="2.4" stroke-dasharray="5,4"/>
+    <text x="24" y="-44" text-anchor="end" class="mono amber-lbl">w≤0</text>
+    <!-- Cube inside frustum -->
+    <g transform="translate(136, 0) scale(0.7)">
+      <polygon points="0,-42 38,-22 0,-2 -38,-22" fill="#38BDF8" stroke="#0F172A" stroke-width="2.4" stroke-linejoin="round"/>
+      <polygon points="-38,-22 0,-2 0,40 -38,20" fill="#2563EB" stroke="#0F172A" stroke-width="2.4" stroke-linejoin="round"/>
+      <polygon points="38,-22 0,-2 0,40 38,20" fill="#0EA5E9" stroke="#0F172A" stroke-width="2.4" stroke-linejoin="round"/>
+    </g>
+    <text x="224" y="-44" class="mono axis-lbl">Far</text>
+    <text x="52" y="-32" class="mono axis-lbl">Near</text>
+  </g>
+
+  <!-- Arrow 4 -> 5 (/w) -->
+  <line x1="428" y1="598" x2="496" y2="598" stroke="#0EA5E9" stroke-width="2.8" marker-end="url(#arrCyan)"/>
+  <rect x="434" y="562" width="60" height="26" rx="13" fill="#ECFEFF" stroke="#0EA5E9"/>
+  <text x="464" y="580" text-anchor="middle" class="mono op-cyan">/ w</text>
+
+  <!-- Card 5: NDC Space (x=508, w=360) -->
+  <g filter="url(#cardShadow)">
+    <rect x="508" y="466" width="360" height="264" rx="18" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="2"/>
+  </g>
+  <circle cx="540" cy="498" r="14" fill="#0EA5E9"/>
+  <text x="540" y="503" text-anchor="middle" class="font step-num">5</text>
+  <text x="564" y="505" class="font card-title">NDC Space</text>
+  <text x="688" y="710" text-anchor="middle" class="font card-sub">Normalized Box: xy ∈ [-1,1], z ∈ [0,1]</text>
+  <!-- Visual 5: Standardized wireframe unit cube containing the cube -->
+  <g transform="translate(688, 602)">
+    <!-- Back square of NDC box -->
+    <rect x="-42" y="-58" width="108" height="108" fill="none" stroke="#CBD5E1" stroke-width="1.6" stroke-dasharray="4,4"/>
+    <!-- Front square of NDC box -->
+    <rect x="-66" y="-42" width="108" height="108" fill="#F8FAFC" fill-opacity="0.55" stroke="#0EA5E9" stroke-width="2.2"/>
+    <!-- Connecting depth edges -->
+    <line x1="-66" y1="-42" x2="-42" y2="-58" stroke="#94A3B8" stroke-width="1.6"/>
+    <line x1="42" y1="-42" x2="66" y2="-58" stroke="#94A3B8" stroke-width="1.6"/>
+    <line x1="42" y1="66" x2="66" y2="50" stroke="#94A3B8" stroke-width="1.6"/>
+    <!-- Normalized cube inside -->
+    <g transform="translate(-8, 8) scale(0.68)">
+      <polygon points="0,-42 38,-22 0,-2 -38,-22" fill="#38BDF8" stroke="#0F172A" stroke-width="2.4" stroke-linejoin="round"/>
+      <polygon points="-38,-22 0,-2 0,40 -38,20" fill="#2563EB" stroke="#0F172A" stroke-width="2.4" stroke-linejoin="round"/>
+      <polygon points="38,-22 0,-2 0,40 38,20" fill="#0EA5E9" stroke="#0F172A" stroke-width="2.4" stroke-linejoin="round"/>
+    </g>
+    <text x="-88" y="-40" class="mono axis-lbl">+1</text>
+    <text x="-88" y="68" class="mono axis-lbl">-1</text>
+  </g>
+
+  <!-- Arrow 5 -> 6 (Viewport) -->
+  <line x1="868" y1="598" x2="936" y2="598" stroke="#0EA5E9" stroke-width="2.8" marker-end="url(#arrCyan)"/>
+  <rect x="866" y="562" width="74" height="26" rx="13" fill="#ECFEFF" stroke="#0EA5E9"/>
+  <text x="903" y="580" text-anchor="middle" class="mono op-cyan">VP</text>
+
+  <!-- Card 6: Screen Space (x=948, w=360) -->
+  <g filter="url(#cardShadow)">
+    <rect x="948" y="466" width="360" height="264" rx="18" fill="#FFFFFF" stroke="#CBD5E1" stroke-width="2"/>
+  </g>
+  <circle cx="980" cy="498" r="14" fill="#0EA5E9"/>
+  <text x="980" y="503" text-anchor="middle" class="font step-num">6</text>
+  <text x="1004" y="505" class="font card-title">Screen Space</text>
+  <text x="1128" y="710" text-anchor="middle" class="font card-sub">2D Discrete Pixel Grid + Depth</text>
+  <!-- Visual 6: Pixel grid with quantized blue cube -->
+  <g transform="translate(1048, 536)">
+    <rect x="0" y="0" width="160" height="128" rx="8" fill="#F8FAFC" stroke="#1E293B" stroke-width="2.4"/>
+    <!-- Grid lines -->
+    <g stroke="#E2E8F0" stroke-width="1">
+      <line x1="16" y1="0" x2="16" y2="128"/><line x1="32" y1="0" x2="32" y2="128"/><line x1="48" y1="0" x2="48" y2="128"/>
+      <line x1="64" y1="0" x2="64" y2="128"/><line x1="80" y1="0" x2="80" y2="128"/><line x1="96" y1="0" x2="96" y2="128"/>
+      <line x1="112" y1="0" x2="112" y2="128"/><line x1="128" y1="0" x2="128" y2="128"/><line x1="144" y1="0" x2="144" y2="128"/>
+      <line x1="0" y1="16" x2="160" y2="16"/><line x1="0" y1="32" x2="160" y2="32"/><line x1="0" y1="48" x2="160" y2="48"/>
+      <line x1="0" y1="64" x2="160" y2="64"/><line x1="0" y1="80" x2="160" y2="80"/><line x1="0" y1="96" x2="160" y2="96"/>
+      <line x1="0" y1="112" x2="160" y2="112"/>
+    </g>
+    <!-- Pixelated cube blocks -->
+    <rect x="64" y="16" width="32" height="16" fill="#38BDF8"/>
+    <rect x="48" y="32" width="64" height="16" fill="#38BDF8"/>
+    <rect x="32" y="48" width="48" height="48" fill="#2563EB"/>
+    <rect x="80" y="48" width="48" height="48" fill="#0EA5E9"/>
+    <rect x="48" y="96" width="32" height="16" fill="#1D4ED8"/>
+    <rect x="80" y="96" width="32" height="16" fill="#0284C7"/>
+    <!-- (0,0) top-left origin -->
+    <circle cx="0" cy="0" r="4" fill="#F59E0B"/>
+    <text x="-38" y="6" class="mono axis-lbl">(0,0)</text>
+  </g>
+</svg>
